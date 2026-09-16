@@ -67,10 +67,28 @@ def normalize_amount(raw_amt):
     except (ValueError, TypeError):
         return 0
 
+def normalize_rate(raw_rate, amt=0, plan_amt=0):
+    """낙찰률(%)을 float로 변환 또는 계산"""
+    if raw_rate is not None and str(raw_rate).strip() != "":
+        try:
+            val = float(str(raw_rate).replace(",", "").strip())
+            return round(val, 2)
+        except (ValueError, TypeError):
+            pass
+    if plan_amt > 0 and amt > 0:
+        return round((amt / plan_amt) * 100, 2)
+    return None
+
 def extract_contract_fields(item):
     """
-    계약 정보 항목에서 요구된 5개 필드만 추출:
-    계약명, 계약업체, 계약금액(원), 계약일, 계약방법
+    계약 정보 항목에서 요구된 주요 필드 전수 정제 추출:
+    - cntrctNm (계약명), cntrctEntrpsNm (계약업체), cntrctAmnt (계약금액, 원)
+    - cntrctPlanaAmnt (예정금액, 원) -> 예산 대비 절감률 산출용
+    - cntrctBidnRate (낙찰률, %) -> 경쟁도 및 가격 적정성 분석용
+    - cntrctDate (계약일, YYYY-MM-DD 변환)
+    - cntrctMth (계약방법: 수의계약, 일반경쟁, 제한경쟁, 2단계경쟁, 협상 등)
+    - cntrctDivs (계약구분: 물품, 용역, 공사 등)
+    - bidMth (입찰방법), cntrctNo (계약번호)
     """
     # 1. 계약명
     name = (
@@ -92,25 +110,59 @@ def extract_contract_fields(item):
     )
     amt = normalize_amount(raw_amt)
 
-    # 4. 계약일
+    # 4. 예정금액 (원 단위 정수)
+    raw_plan_amt = (
+        item.get("cntrctPlanaAmnt") or item.get("planaAmnt") or item.get("bsnsPlanaAmt")
+        or item.get("cntrctPlanAmt") or item.get("예정금액")
+    )
+    plan_amt = normalize_amount(raw_plan_amt)
+    if plan_amt == 0 and amt > 0:
+        plan_amt = amt  # 수의계약 등 예정금액 미기재 시 최소 계약금액으로 방어
+
+    # 5. 낙찰률 (%)
+    raw_bid_rate = item.get("cntrctBidnRate") or item.get("bidnRate") or item.get("낙찰률")
+    bid_rate = normalize_rate(raw_bid_rate, amt, plan_amt)
+
+    # 6. 계약일
     raw_date = (
         item.get("cntrctDate") or item.get("cntrctDe") or item.get("cntrctDt")
         or item.get("cntrctDttm") or item.get("계약일") or ""
     )
     date_val = normalize_date(raw_date)
 
-    # 5. 계약방법
+    # 7. 계약방법
     method = (
         item.get("cntrctMth") or item.get("cntrctMthNm") or item.get("cntrctMthCd")
         or item.get("cntrctMthod") or item.get("계약방법") or ""
+    )
+
+    # 8. 계약구분
+    divs = (
+        item.get("cntrctDivs") or item.get("cntrctDivsNm") or item.get("divs")
+        or item.get("계약구분") or ""
+    )
+
+    # 9. 입찰방법
+    bid_mth = (
+        item.get("bidMth") or item.get("bidMthNm") or item.get("입찰방법") or ""
+    )
+
+    # 10. 계약번호
+    cntrct_no = (
+        item.get("cntrctNo") or item.get("cntrctNum") or item.get("계약번호") or ""
     )
 
     return {
         "계약명": str(name).strip(),
         "계약업체": str(corp).strip(),
         "계약금액": amt,
+        "예정금액": plan_amt,
+        "낙찰률": bid_rate,
         "계약일": date_val,
         "계약방법": str(method).strip(),
+        "계약구분": str(divs).strip(),
+        "입찰방법": str(bid_mth).strip(),
+        "계약번호": str(cntrct_no).strip(),
     }
 
 def fetch_contracts():
