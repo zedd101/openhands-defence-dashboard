@@ -575,13 +575,116 @@
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* 상단 탭 네비게이션 */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #E9ECEF;
+    }
+
+    .tab-btn {
+      padding: 12px 22px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #868E96;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+
+    .tab-btn:hover {
+      color: #212529;
+      background-color: #F8F9FA;
+    }
+
+    .tab-btn.active {
+      color: #F37321;
+      border-bottom-color: #F37321;
+      font-weight: 700;
+      background-color: transparent;
+    }
+
+    .tab-pane.hidden {
+      display: none !important;
+    }
+
+    .public-meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #FFFFFF;
+      border: 1px solid #E9ECEF;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .public-meta-tags {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .public-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #F8F9FA;
+      border: 1px solid #E9ECEF;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #495057;
+      font-weight: 500;
+    }
+
+    .public-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .public-kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .public-meta-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- 헤더 -->
-    <header class="header">
+    <!-- 상단 탭 네비게이션 -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" id="tab-btn-sample" type="button">
+        샘플
+      </button>
+      <button class="tab-btn" id="tab-btn-public" type="button">
+        공개 조달 동향 (방위사업청 공공데이터)
+      </button>
+    </nav>
+
+    <!-- 첫 번째 탭: 샘플 (지금 있는 대시보드 전체) -->
+    <div id="tab-pane-sample" class="tab-pane">
+      <!-- 헤더 -->
+      <header class="header">
       <div class="header-title-area">
         <h1>
           방산 구매·납기 통합 관리 대시보드
@@ -721,7 +824,15 @@
         </div>
       </div>
     </section>
-  </div>
+    </div><!-- end of tab-pane-sample -->
+
+    <!-- 두 번째 탭: 공개 조달 동향 (방위사업청 공공데이터) -->
+    <div id="tab-pane-public" class="tab-pane hidden">
+      <div id="public-tab-content">
+        <!-- JS로 동적 생성 또는 public.js 부재 시 데이터 없음 표기 -->
+      </div>
+    </div>
+  </div><!-- end of container -->
 
   <!-- 하단 고정 안내 바 -->
   <footer class="fixed-footer">
@@ -752,10 +863,169 @@
   <!-- 가상 데이터 로드 (더블클릭 실행 지원, fetch 미사용) -->
   <script src="data.js"></script>
   <script src="rate.js"></script>
+  <script src="public.js"></script>
 
   <!-- 대시보드 코어 로직 -->
   <script>
     (function () {
+      // ========================================================
+      // 0-A. 최상단 탭 전환 이벤트
+      // ========================================================
+      const tabBtnSample = document.getElementById("tab-btn-sample");
+      const tabBtnPublic = document.getElementById("tab-btn-public");
+      const tabPaneSample = document.getElementById("tab-pane-sample");
+      const tabPanePublic = document.getElementById("tab-pane-public");
+
+      if (tabBtnSample && tabBtnPublic && tabPaneSample && tabPanePublic) {
+        tabBtnSample.addEventListener("click", function () {
+          tabBtnSample.classList.add("active");
+          tabBtnPublic.classList.remove("active");
+          tabPaneSample.classList.remove("hidden");
+          tabPanePublic.classList.add("hidden");
+        });
+
+        tabBtnPublic.addEventListener("click", function () {
+          tabBtnPublic.classList.add("active");
+          tabBtnSample.classList.remove("active");
+          tabPanePublic.classList.remove("hidden");
+          tabPaneSample.classList.add("hidden");
+        });
+      }
+
+      // ========================================================
+      // 0-B. 두 번째 탭: 공개 조달 동향 (방위사업청 공공데이터)
+      // (가상 데이터와 일체 혼합·비교하지 않고 완전 독립 렌더링)
+      // ========================================================
+      const publicContent = document.getElementById("public-tab-content");
+      const hasPublic = typeof PUBLIC !== "undefined" && PUBLIC && Array.isArray(PUBLIC.계약);
+
+      if (!hasPublic || PUBLIC.계약.length === 0) {
+        if (publicContent) {
+          publicContent.innerHTML =
+            '<div style="text-align: center; padding: 80px 20px; background: #FFFFFF; border-radius: 12px; border: 1px dashed #CED4DA; margin-top: 10px;">' +
+            '  <div style="font-size: 40px; margin-bottom: 12px;">📭</div>' +
+            '  <div style="font-size: 18px; font-weight: 700; color: #495057; margin-bottom: 8px;">데이터 없음</div>' +
+            '  <div style="font-size: 14px; color: #868E96;">공개 조달 데이터(public.js)를 불러오지 못했거나 수집된 계약 내역이 없습니다.</div>' +
+            '</div>';
+        }
+      } else {
+        const contracts = PUBLIC.계약;
+        const totalCount = typeof PUBLIC.건수 === "number" ? PUBLIC.건수 : contracts.length;
+        const collectedAt = PUBLIC.수집시각 || "-";
+
+        let totalAmount = 0;
+        const methodCounts = {};
+
+        contracts.forEach(function (c) {
+          const amt = Number(c.계약금액) || 0;
+          totalAmount += amt;
+          const method = (c.계약방법 && String(c.계약방법).trim()) ? String(c.계약방법).trim() : "기타";
+          methodCounts[method] = (methodCounts[method] || 0) + 1;
+        });
+
+        // 계약방법별 건수 정렬 (건수 내림차순)
+        const sortedMethods = Object.keys(methodCounts).map(function (m) {
+          return {
+            method: m,
+            count: methodCounts[m],
+            percent: totalCount > 0 ? ((methodCounts[m] / totalCount) * 100).toFixed(1) : "0.0"
+          };
+        }).sort(function (a, b) {
+          return b.count - a.count;
+        });
+
+        // 금액 표기 (조/억 단위 및 상세 원화)
+        let amountText = "";
+        let amountSub = totalAmount.toLocaleString() + "원";
+        if (totalAmount >= 1000000000000) {
+          const jo = (totalAmount / 1000000000000).toFixed(2);
+          amountText = '약 ' + jo + '<span class="unit">조원</span>';
+        } else if (totalAmount >= 100000000) {
+          const eok = Math.round(totalAmount / 100000000).toLocaleString();
+          amountText = '약 ' + eok + '<span class="unit">억원</span>';
+        } else {
+          amountText = totalAmount.toLocaleString() + '<span class="unit">원</span>';
+        }
+
+        // 계약방법 표 행 구성
+        let methodRows = "";
+        sortedMethods.forEach(function (item) {
+          methodRows +=
+            '<tr>' +
+            '  <td><strong>' + item.method + '</strong></td>' +
+            '  <td class="text-right"><strong>' + item.count.toLocaleString() + '</strong>건</td>' +
+            '  <td class="text-right">' +
+            '    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">' +
+            '      <span style="font-weight: 600; min-width: 48px;">' + item.percent + '%</span>' +
+            '      <div style="width: 120px; background: #E9ECEF; height: 8px; border-radius: 4px; overflow: hidden;">' +
+            '        <div style="width: ' + item.percent + '%; background: #F37321; height: 100%; border-radius: 4px;"></div>' +
+            '      </div>' +
+            '    </div>' +
+            '  </td>' +
+            '</tr>';
+        });
+
+        if (publicContent) {
+          publicContent.innerHTML =
+            '<!-- 출처 및 수집시각 메타 바 -->' +
+            '<div class="public-meta-bar">' +
+            '  <div style="font-weight: 700; color: #212529; font-size: 15px;">' +
+            '    🏛️ 공개 조달 동향 <span style="font-size: 13px; font-weight: normal; color: #868E96;">(방위사업청 최근 1개월 국내 계약)</span>' +
+            '  </div>' +
+            '  <div class="public-meta-tags">' +
+            '    <span class="public-meta-badge">출처: 방위사업청 (공공데이터포털)</span>' +
+            '    <span class="public-meta-badge">수집시각: ' + collectedAt + '</span>' +
+            '  </div>' +
+            '</div>' +
+            '<!-- 최근 1개월 계약 건수 & 계약금액 합계 KPI 카드 -->' +
+            '<section class="public-kpi-grid">' +
+            '  <div class="kpi-card highlight">' +
+            '    <div class="kpi-label">최근 1개월 계약 건수</div>' +
+            '    <div class="kpi-value">' + totalCount.toLocaleString() + '<span class="unit">건</span></div>' +
+            '    <div class="kpi-desc">방위사업청 국내 계약정보 공공데이터 등록 건수</div>' +
+            '  </div>' +
+            '  <div class="kpi-card highlight">' +
+            '    <div class="kpi-label">계약금액 합계</div>' +
+            '    <div class="kpi-value">' + amountText + '</div>' +
+            '    <div class="kpi-desc">' + amountSub + '</div>' +
+            '  </div>' +
+            '</section>' +
+            '<!-- 계약방법별 건수 표 -->' +
+            '<section class="section-box">' +
+            '  <div class="section-header">' +
+            '    <div class="section-title">' +
+            '      <span>📊 계약방법별 건수</span>' +
+            '      <span style="font-size: 13px; font-weight: normal; color: #868E96;">(총 ' + sortedMethods.length + '개 계약방법 분류)</span>' +
+            '    </div>' +
+            '  </div>' +
+            '  <div class="table-container">' +
+            '    <table>' +
+            '      <thead>' +
+            '        <tr>' +
+            '          <th>계약방법</th>' +
+            '          <th class="text-right">건수</th>' +
+            '          <th class="text-right">비율</th>' +
+            '        </tr>' +
+            '      </thead>' +
+            '      <tbody>' +
+            '        ' + methodRows +
+            '      </tbody>' +
+            '      <tfoot>' +
+            '        <tr style="background: #F8F9FA; font-weight: 700;">' +
+            '          <td>합계</td>' +
+            '          <td class="text-right">' + totalCount.toLocaleString() + '건</td>' +
+            '          <td class="text-right">100.0%</td>' +
+            '        </tr>' +
+            '      </tfoot>' +
+            '    </table>' +
+            '  </div>' +
+            '</section>';
+        }
+      }
+
+      // ========================================================
+      // 0-C. 첫 번째 탭: 샘플 대시보드 (가상 데이터)
+      // ========================================================
       // 0. 데이터 존재 여부 확인
       if (typeof CONTRACTS === "undefined" || typeof PURCHASE_ORDERS === "undefined") {
         alert("데이터 파일(data.js)을 불러오지 못했습니다. 파일이 같은 docs 폴더에 있는지 확인해 주십시오.");
