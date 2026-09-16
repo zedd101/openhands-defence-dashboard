@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>방산 구매·납기 통합 관리 대시보드</title>
   <style>
-    /* 기본 리셋 및 시스템 폰트 설정 (외부 폰트 미사용) */
+    /* ==========================================================================
+       Linear + Stripe Hybrid Theme: Issue-Queue Agility & Fintech Tabular Precision
+       ========================================================================== */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -13,147 +15,217 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
-      background-color: #F8F9FA;
-      color: #212529;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Apple SD Gothic Neo", sans-serif;
+      background-color: #F8FAFC;
+      color: #1E293B;
       line-height: 1.5;
-      padding-bottom: 70px; /* 푸터 고정 여백 */
+      padding-bottom: 70px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
-      padding: 24px 20px;
+      padding: 26px 22px;
     }
 
-    /* 상단 헤더 */
+    /* 상단 탭 바 (Linear Pill Segment 스타일) */
+    .tab-bar {
+      display: inline-flex;
+      background: #E2E8F0;
+      padding: 3px;
+      border-radius: 8px;
+      margin-bottom: 22px;
+      gap: 3px;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.12s ease;
+    }
+
+    .tab-btn:hover {
+      color: #0F172A;
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .tab-btn.active {
+      color: #0F172A;
+      background-color: #FFFFFF;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-pane.hidden {
+      display: none !important;
+    }
+
+    /* 상단 헤더 (Linear 미니멀 바) */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #FFFFFF;
       padding: 20px 24px;
-      border-radius: 12px;
-      border: 1px solid #E9ECEF;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+      margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
 
     .header-title-area h1 {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
-      color: #111827;
+      color: #0F172A;
+      letter-spacing: -0.02em;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
     .header-title-area .badge-live {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      background-color: #FFF3EB;
-      color: #F37321;
-      border: 1px solid #F37321;
-      padding: 2px 8px;
+      background-color: #FFF7ED;
+      color: #EA580C;
+      border: 1px solid #FDBA74;
+      padding: 2px 9px;
       border-radius: 9999px;
+      letter-spacing: 0.01em;
     }
 
     .header-title-area p {
       font-size: 13px;
-      color: #6C757D;
+      color: #64748B;
       margin-top: 4px;
     }
 
-    /* 버튼 스타일 (포인트 주황 #F37321) */
+    /* 버튼 스타일 (Linear 컴팩트 액션 버튼) */
     .btn-primary {
       background-color: #F37321;
       color: #FFFFFF;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 14px;
+      border: 1px solid #EA580C;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background-color 0.15s ease-in-out, transform 0.05s;
+      box-shadow: 0 1px 2px rgba(243, 115, 33, 0.25);
+      transition: all 0.12s ease;
     }
 
     .btn-primary:hover {
-      background-color: #D95F12;
+      background-color: #EA580C;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(243, 115, 33, 0.3);
     }
 
-    .btn-primary:active {
-      transform: scale(0.98);
+    .btn-secondary {
+      background-color: #FFFFFF;
+      color: #334155;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: all 0.12s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #F8FAFC;
+      border-color: #94A3B8;
+      color: #0F172A;
     }
 
     /* 1. 핵심 지표 카드 4개 */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 14px;
+      margin-bottom: 22px;
     }
 
     .kpi-card {
       background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 20px;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 18px 20px;
       position: relative;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      transition: all 0.15s ease;
+    }
+
+    .kpi-card:hover {
+      border-color: #CBD5E1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
 
     .kpi-card.highlight {
-      border-top: 4px solid #F37321;
+      border-top: 3px solid #F37321;
     }
 
     .kpi-card.alert-red {
-      border-top: 4px solid #DC3545;
+      border-top: 3px solid #EF4444;
       background: #FFFDFC;
     }
 
     .kpi-card.alert-yellow {
-      border-top: 4px solid #FFC107;
+      border-top: 3px solid #F59E0B;
     }
 
     .kpi-label {
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 600;
-      color: #6C757D;
-      margin-bottom: 8px;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
     }
 
     .kpi-value {
       font-size: 28px;
-      font-weight: 800;
-      color: #111827;
-      letter-spacing: -0.5px;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
     }
 
     .kpi-value .unit {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      color: #495057;
-      margin-left: 2px;
+      color: #64748B;
+      margin-left: 3px;
     }
 
     .kpi-desc {
       font-size: 12px;
-      color: #868E96;
-      margin-top: 6px;
+      color: #94A3B8;
+      margin-top: 4px;
     }
 
     /* 섹션 공통 스타일 */
     .section-box {
       background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 22px 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
     .section-header {
@@ -162,59 +234,61 @@
       align-items: center;
       margin-bottom: 16px;
       padding-bottom: 12px;
-      border-bottom: 1px solid #F1F3F5;
+      border-bottom: 1px solid #F1F5F9;
     }
 
     .section-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
-      color: #212529;
+      color: #0F172A;
+      letter-spacing: -0.01em;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
     .section-sub {
-      font-size: 13px;
-      color: #6C757D;
+      font-size: 12.5px;
+      color: #64748B;
     }
 
-    /* 2. 지금 조치할 것 (우선순위 카드 목록) */
+    /* 2. 지금 조치할 것 (Linear 특유의 Issue Action Queue 카드) */
     .action-list {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
     .action-item {
-      padding: 18px 22px;
-      border-radius: 10px;
-      border: 1px solid #E9ECEF;
+      padding: 16px 20px;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
       background-color: #FFFFFF;
       display: grid;
       grid-template-columns: 280px minmax(320px, 1.3fr) minmax(320px, 1.1fr);
-      gap: 24px;
+      gap: 20px;
       align-items: flex-start;
-      transition: box-shadow 0.15s ease, border-color 0.15s ease;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      transition: all 0.12s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     }
 
     .action-item:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-      border-color: #DDE2E5;
+      border-color: #94A3B8;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+      transform: translateY(-1px);
     }
 
     .action-item.alert-red {
-      border-left: 5px solid #DC3545;
-      background-color: #FFFDFD;
+      border-left: 3.5px solid #EF4444;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.02) 0%, #FFFFFF 15%);
     }
 
     .action-item.alert-yellow {
-      border-left: 5px solid #F59F00;
-      background-color: #FFFFFD;
+      border-left: 3.5px solid #F59E0B;
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.02) 0%, #FFFFFF 15%);
     }
 
-    /* 1열: 대상 사업 및 부품 정보 */
+    /* 1열: 대상 사업 */
     .action-col-target {
       display: flex;
       flex-direction: column;
@@ -224,25 +298,24 @@
     .action-badge-row {
       display: flex;
       align-items: center;
-      height: 24px;
+      height: 22px;
       margin-bottom: 6px;
     }
 
     .action-badge {
       display: inline-flex;
       align-items: center;
-      padding: 3px 8px;
+      padding: 2.5px 8px;
       font-size: 11px;
       font-weight: 700;
-      border-radius: 4px;
-      letter-spacing: -0.2px;
+      border-radius: 9999px;
       white-space: nowrap;
       line-height: 1.2;
     }
 
     .badge-red {
       background-color: #FEE2E2;
-      color: #991B1B;
+      color: #B91C1C;
       border: 1px solid #FCA5A5;
     }
 
@@ -253,10 +326,10 @@
     }
 
     .action-target-title {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
-      color: #111827;
-      line-height: 1.45;
+      color: #0F172A;
+      line-height: 1.4;
       word-break: keep-all;
       overflow-wrap: break-word;
       margin-bottom: 6px;
@@ -264,7 +337,7 @@
 
     .action-target-meta {
       font-size: 12px;
-      color: #6C757D;
+      color: #64748B;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -272,16 +345,19 @@
     }
 
     .action-target-meta strong {
-      color: #212529;
+      color: #334155;
       font-weight: 600;
+      background: #F1F5F9;
+      padding: 1px 6px;
+      border-radius: 4px;
     }
 
     .meta-divider {
-      color: #CED4DA;
+      color: #CBD5E1;
       font-size: 11px;
     }
 
-    /* 2열: 문제 원인 설명 */
+    /* 2열: 문제 원인 */
     .action-col-cause {
       display: flex;
       flex-direction: column;
@@ -289,33 +365,33 @@
     }
 
     .action-col-label {
-      height: 24px;
+      height: 22px;
       display: flex;
       align-items: center;
       gap: 5px;
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: -0.2px;
+      letter-spacing: 0.02em;
       margin-bottom: 6px;
     }
 
     .action-col-label.label-red {
-      color: #C92A2A;
+      color: #DC2626;
     }
 
     .action-col-label.label-yellow {
-      color: #B07800;
+      color: #D97706;
     }
 
     .action-cause-text {
       font-size: 13px;
-      color: #374151;
-      line-height: 1.6;
+      color: #334155;
+      line-height: 1.55;
       word-break: keep-all;
       overflow-wrap: break-word;
     }
 
-    /* 3열: 권고 조치 박스 */
+    /* 3열: 권고 조치 박스 (Linear 스타일 Action Callout) */
     .action-col-action {
       display: flex;
       flex-direction: column;
@@ -324,26 +400,29 @@
     }
 
     .action-action-box {
-      background-color: #F8F9FA;
-      border: 1px solid #E9ECEF;
-      border-radius: 8px;
-      padding: 12px 16px;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-left: 3px solid #F37321;
+      border-radius: 6px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       box-sizing: border-box;
     }
 
     .action-item.alert-red .action-action-box {
-      background-color: #FFF8F6;
-      border-color: #FFE3D8;
+      background-color: #FFF7ED;
+      border-color: #FFEDD5;
+      border-left-color: #F37321;
     }
 
     .action-action-label {
       font-size: 11px;
       font-weight: 700;
-      color: #F37321;
-      letter-spacing: -0.2px;
+      color: #EA580C;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -351,13 +430,12 @@
 
     .action-action-text {
       font-size: 13px;
-      color: #1F2937;
-      line-height: 1.55;
+      color: #0F172A;
+      line-height: 1.5;
       word-break: keep-all;
       overflow-wrap: break-word;
     }
 
-    /* 반응형 레이아웃 */
     @media (max-width: 992px) {
       .action-item {
         grid-template-columns: 1fr;
@@ -365,7 +443,7 @@
       }
     }
 
-    /* 테이블 공통 스타일 */
+    /* 테이블 스타일 (Stripe-grade Precision Table) */
     .table-container {
       width: 100%;
       overflow-x: auto;
@@ -379,64 +457,64 @@
     }
 
     th {
-      background-color: #F8F9FA;
-      color: #495057;
+      background-color: #F8FAFC;
+      color: #475569;
+      font-size: 11.5px;
       font-weight: 600;
-      padding: 10px 12px;
-      border-bottom: 2px solid #E9ECEF;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 11px 12px;
+      border-bottom: 1px solid #E2E8F0;
       white-space: nowrap;
     }
 
     td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #F1F3F5;
-      color: #343A40;
+      padding: 11px 12px;
+      border-bottom: 1px solid #F1F5F9;
+      color: #334155;
       vertical-align: middle;
       white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
 
     tr:hover td {
-      background-color: #FBFBFC;
+      background-color: #F8FAFC;
     }
 
-    /* 날짜가 밀린 칸은 빨간 글씨 강조 */
     .delayed-date {
-      color: #E03131 !important;
+      color: #DC2626 !important;
       font-weight: 700 !important;
-      background-color: #FFF5F5;
+      background-color: #FEF2F2;
       padding: 2px 6px;
       border-radius: 4px;
       display: inline-block;
+      border: 1px solid #FECACA;
     }
 
     .tag-status {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 2px 7px;
       font-size: 11px;
       font-weight: 600;
-      border-radius: 4px;
-      background-color: #E9ECEF;
-      color: #495057;
+      border-radius: 9999px;
+      background-color: #F1F5F9;
+      color: #475569;
     }
 
     .tag-status.warning {
-      background-color: #FFF5F5;
-      color: #E03131;
-      border: 1px solid #FFC9C9;
+      background-color: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
     }
 
     .tag-status.success {
-      background-color: #EBFBEE;
-      color: #2B8A3E;
+      background-color: #F0FDF4;
+      color: #16A34A;
+      border: 1px solid #BBF7D0;
     }
 
-    .text-right {
-      text-align: right;
-    }
-
-    .text-center {
-      text-align: center;
-    }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
 
     /* 5. 협력사 납기 준수율 막대 그래프 */
     .supplier-chart-container {
@@ -448,8 +526,8 @@
       position: absolute;
       top: 0;
       bottom: 0;
-      left: 170px; /* 협력사명 컬럼 너비 */
-      right: 120px; /* 수치 컬럼 너비 */
+      left: 170px;
+      right: 120px;
       pointer-events: none;
     }
 
@@ -467,15 +545,16 @@
       top: 0;
       left: 90%;
       transform: translateX(-50%);
-      background-color: #FFF3EB;
-      color: #F37321;
+      background-color: #FFF7ED;
+      color: #EA580C;
       font-size: 11px;
       font-weight: 700;
       padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid #F37321;
+      border-radius: 9999px;
+      border: 1px solid #FDBA74;
       white-space: nowrap;
       z-index: 6;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .supplier-row {
@@ -496,37 +575,37 @@
 
     .supplier-name {
       font-weight: 600;
-      color: #343A40;
+      color: #1E293B;
     }
 
     .badge-manage {
-      background-color: #FFF5F5;
-      color: #E03131;
-      border: 1px solid #FFA8A8;
-      font-size: 11px;
+      background-color: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      font-size: 10.5px;
       font-weight: 700;
       padding: 1px 6px;
-      border-radius: 4px;
+      border-radius: 9999px;
       margin-left: 6px;
     }
 
     .supplier-bar-track {
       flex: 1;
-      height: 18px;
-      background-color: #EDF2F7;
-      border-radius: 6px;
+      height: 15px;
+      background-color: #F1F5F9;
+      border-radius: 9999px;
       overflow: hidden;
       position: relative;
     }
 
     .supplier-bar-fill {
       height: 100%;
-      border-radius: 6px;
-      transition: width 0.3s ease;
+      border-radius: 9999px;
+      transition: width 0.25s ease;
     }
 
     .supplier-bar-fill.normal {
-      background-color: #4A5568;
+      background-color: #64748B;
     }
 
     .supplier-bar-fill.warning {
@@ -538,776 +617,257 @@
       padding-left: 14px;
       font-size: 13px;
       font-weight: 600;
-      color: #495057;
+      color: #0F172A;
       text-align: right;
       flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* 하단 고정 바 (안내 문구) */
+    /* 하단 고정 바 */
     .fixed-footer {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 44px;
-      background-color: #212529;
-      color: #ADB5BD;
+      height: 42px;
+      background-color: #0F172A;
+      color: #94A3B8;
       font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 100;
-      border-top: 1px solid #343A40;
+      border-top: 1px solid #1E293B;
     }
 
     .fixed-footer strong {
-      color: #F8F9FA;
+      color: #FFFFFF;
       margin-left: 4px;
     }
 
-    /* 모달 팝업 (주간 보고 요약) */
+    /* 모달 팝업 */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
       z-index: 1000;
     }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
+    .modal-overlay.active { display: flex; }
     .modal-content {
       background: #FFFFFF;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 640px;
+      border-radius: 10px;
+      width: 90%; max-width: 640px;
       padding: 24px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       position: relative;
+      border: 1px solid #E2E8F0;
     }
-
     .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      border-bottom: 1px solid #E9ECEF;
-      padding-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; border-bottom: 1px solid #F1F5F9; padding-bottom: 12px;
     }
-
-    .modal-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: #111827;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 20px;
-      color: #868E96;
-      cursor: pointer;
-    }
-
+    .modal-title { font-size: 16.5px; font-weight: 700; color: #0F172A; }
+    .modal-close { background: none; border: none; font-size: 20px; color: #94A3B8; cursor: pointer; }
+    .modal-close:hover { color: #0F172A; }
     .report-textarea {
-      width: 100%;
-      height: 180px;
-      padding: 12px;
-      font-family: monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      background-color: #F8F9FA;
-      border: 1px solid #CED4DA;
-      border-radius: 8px;
-      resize: none;
-      color: #212529;
-      margin-bottom: 16px;
+      width: 100%; height: 180px; padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px; line-height: 1.55;
+      background-color: #F8FAFC; border: 1px solid #CBD5E1;
+      border-radius: 6px; resize: none; color: #0F172A; margin-bottom: 16px;
     }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    .btn-secondary {
-      background-color: #E9ECEF;
-      color: #495057;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* 복사 완료 토스트 */
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
     .toast {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      background-color: #212529;
-      color: #FFFFFF;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 2000;
-      display: none;
-      animation: fadeIn 0.2s ease-in-out;
+      position: fixed; top: 24px; right: 24px;
+      background-color: #0F172A; color: #FFFFFF;
+      padding: 12px 20px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 2000;
+      display: none; animation: fadeIn 0.2s ease-in-out;
     }
+    .toast.active { display: block; }
 
-    .toast.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 상단 탭 네비게이션 */
-    .tab-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      border-bottom: 2px solid #E9ECEF;
-    }
-
-    .tab-btn {
-      padding: 12px 22px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #868E96;
-      background: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      border-top-left-radius: 6px;
-      border-top-right-radius: 6px;
-    }
-
-    .tab-btn:hover {
-      color: #212529;
-      background-color: #F8F9FA;
-    }
-
-    .tab-btn.active {
-      color: #F37321;
-      border-bottom-color: #F37321;
-      font-weight: 700;
-      background-color: transparent;
-    }
-
-    .tab-pane.hidden {
-      display: none !important;
-    }
-
-    /* ========================================================
-       공개 조달 동향 고도화 대시보드 전용 스타일
-       ======================================================== */
-    /* 1. 상단 메타 바 */
+    /* 탭2 공개 조달 동향 */
     .public-meta-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      display: flex; justify-content: space-between; align-items: center;
+      background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+      padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-    .public-meta-tags {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    .public-meta-tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .public-meta-badge {
-      display: inline-flex;
-      align-items: center;
-      background: #F8F9FA;
-      border: 1px solid #E9ECEF;
-      border-radius: 6px;
-      padding: 5px 12px;
-      font-size: 12px;
-      color: #495057;
-      font-weight: 500;
+      display: inline-flex; align-items: center;
+      background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 9999px;
+      padding: 4px 12px; font-size: 12px; color: #475569; font-weight: 500;
     }
 
-    /* 2. 글로벌 인터랙티브 필터 바 */
     .filter-card {
-      background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 18px 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+      padding: 18px 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .filter-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #F1F3F5;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #F1F5F9;
     }
-    .filter-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #212529;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .filter-title { font-size: 14px; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 6px; }
     .filter-reset-btn {
-      background: none;
-      border: 1px solid #CED4DA;
-      color: #495057;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
+      background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569;
+      font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
     }
-    .filter-reset-btn:hover {
-      background: #F8F9FA;
-      border-color: #ADB5BD;
-    }
+    .filter-reset-btn:hover { background: #F8FAFC; color: #0F172A; }
+
     .filter-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1.1fr 1fr 0.8fr;
-      gap: 16px;
-      align-items: flex-end;
-      margin-bottom: 14px;
+      display: grid; grid-template-columns: 1.1fr 1.1fr 1fr 0.8fr;
+      gap: 16px; align-items: flex-end; margin-bottom: 14px;
     }
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .filter-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #495057;
-    }
-    .filter-chips {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-label { font-size: 12px; font-weight: 600; color: #64748B; }
+    .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
     .filter-chip {
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 500;
-      color: #495057;
-      background: #F8F9FA;
-      border: 1px solid #E9ECEF;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-      user-select: none;
+      padding: 5px 12px; font-size: 12px; font-weight: 500; color: #475569;
+      background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 9999px;
+      cursor: pointer; transition: all 0.12s;
     }
-    .filter-chip:hover {
-      background: #E9ECEF;
-      color: #212529;
-    }
+    .filter-chip:hover { background: #E2E8F0; color: #0F172A; }
     .filter-chip.active {
-      background: #FFF4E6;
-      border-color: #F37321;
-      color: #F37321;
-      font-weight: 700;
+      background: #FFF7ED; border-color: #F37321; color: #EA580C; font-weight: 700;
     }
     .filter-select {
-      padding: 7px 10px;
-      font-size: 13px;
-      border: 1px solid #CED4DA;
-      border-radius: 6px;
-      background: #FFFFFF;
-      color: #212529;
-      outline: none;
-    }
-    .filter-select:focus {
-      border-color: #F37321;
-      box-shadow: 0 0 0 2px rgba(243, 115, 33, 0.15);
-    }
-    .search-input-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
+      padding: 7px 10px; font-size: 13px; border: 1px solid #CBD5E1;
+      border-radius: 6px; background: #FFFFFF; color: #0F172A; outline: none;
     }
     .search-input {
-      width: 100%;
-      padding: 8px 32px 8px 12px;
-      font-size: 13px;
-      border: 1px solid #CED4DA;
-      border-radius: 6px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .search-input:focus {
-      border-color: #F37321;
-      box-shadow: 0 0 0 2px rgba(243, 115, 33, 0.15);
-    }
-    .search-clear {
-      position: absolute;
-      right: 10px;
-      color: #ADB5BD;
-      cursor: pointer;
-      font-size: 16px;
-      display: none;
+      width: 100%; padding: 8px 32px 8px 12px; font-size: 13px;
+      border: 1px solid #CBD5E1; border-radius: 6px; outline: none; color: #0F172A;
     }
     .filter-feedback-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #F8F9FA;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-size: 12px;
-      color: #6C757D;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #F8FAFC; border-radius: 6px; padding: 8px 14px;
+      font-size: 12px; color: #64748B; border: 1px solid #F1F5F9;
     }
 
-    /* 3. 6대 헥사곤(육각형) 모듈 그리드 */
     .hex-module-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 22px;
     }
-    .hex-module-card {
-      background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 16px 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
+    .hex-card {
+      background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+      padding: 16px 14px; cursor: pointer; transition: all 0.12s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
-    .hex-module-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(243, 115, 33, 0.12);
-      border-color: #F37321;
-    }
-    .hex-icon-wrap {
-      width: 38px;
-      height: 38px;
-      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-      background: #FFF4E6;
-      border: 1px solid #FFD8A8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 17px;
-      margin-bottom: 10px;
-    }
-    .hex-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #868E96;
-      margin-bottom: 6px;
-    }
-    .hex-value {
-      font-size: 19px;
-      font-weight: 800;
-      color: #111827;
-      letter-spacing: -0.5px;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-    .hex-value .hex-unit {
-      font-size: 13px;
-      font-weight: 600;
-      color: #6C757D;
-      margin-left: 2px;
-    }
-    .hex-desc {
-      font-size: 11px;
-      color: #868E96;
-      line-height: 1.4;
-    }
-    .hex-highlight {
-      border-top: 3px solid #F37321;
-    }
+    .hex-card:hover { border-color: #94A3B8; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .hex-card.active { border-color: #F37321; box-shadow: 0 0 0 2px rgba(243, 115, 33, 0.2); }
+    .hex-icon { font-size: 20px; margin-bottom: 4px; }
+    .hex-title { font-size: 12px; font-weight: 600; color: #64748B; }
+    .hex-val { font-size: 17.5px; font-weight: 700; color: #0F172A; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .hex-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
 
-    /* 4. 4대 멀티 디멘션 비교 분석 차트 그리드 */
     .charts-grid-2x2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-bottom: 24px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px;
     }
-    .chart-panel {
-      background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 18px 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      display: flex;
-      flex-direction: column;
+    .chart-box {
+      background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+      padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-    .chart-panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
+    .chart-box-title {
+      font-size: 14.5px; font-weight: 700; color: #0F172A; margin-bottom: 14px;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .chart-panel-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #212529;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .chart-controls {
-      display: flex;
-      gap: 6px;
-    }
-    .chart-btn-toggle {
-      font-size: 11px;
-      padding: 3px 8px;
-      background: #F8F9FA;
-      border: 1px solid #CED4DA;
-      border-radius: 4px;
-      cursor: pointer;
-      color: #495057;
-      font-weight: 600;
-    }
-    .chart-btn-toggle.active {
-      background: #F37321;
-      color: #FFFFFF;
-      border-color: #F37321;
-    }
-    .chart-svg-container {
-      width: 100%;
-      height: 250px;
-      position: relative;
-    }
+    .chart-svg-container { width: 100%; height: 250px; position: relative; }
     .chart-tooltip {
-      position: absolute;
-      background: rgba(33, 37, 41, 0.92);
-      color: #FFFFFF;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      line-height: 1.4;
-      pointer-events: none;
-      z-index: 100;
-      opacity: 0;
-      transform: translate(-50%, -100%);
-      transition: opacity 0.15s ease;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      position: absolute; background: #0F172A; color: #FFFFFF;
+      padding: 6px 10px; border-radius: 6px; font-size: 12px; pointer-events: none;
+      z-index: 100; opacity: 0; transform: translate(-50%, -100%);
+      transition: opacity 0.12s ease; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .chart-tooltip.visible {
-      opacity: 1;
-    }
+    .chart-tooltip.visible { opacity: 1; }
 
-    /* 5. 고급 인터랙티브 데이터 그리드 (세부 계약 원장) */
     .grid-container {
-      background: #FFFFFF;
-      border: 1px solid #E9ECEF;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      margin-bottom: 24px;
+      background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+      padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 22px;
     }
     .grid-header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
     }
-    .grid-title-area {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .grid-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #212529;
-    }
-    .grid-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .grid-title { font-size: 15.5px; font-weight: 700; color: #0F172A; }
     .btn-export-csv {
-      background: #FFFFFF;
-      border: 1px solid #CED4DA;
-      color: #212529;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
+      background: #FFFFFF; border: 1px solid #CBD5E1; color: #334155;
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-export-csv:hover {
-      background: #F8F9FA;
-      border-color: #F37321;
-      color: #F37321;
-    }
+    .btn-export-csv:hover { background: #F8FAFC; border-color: #F37321; color: #F37321; }
     .page-size-select {
-      padding: 6px 10px;
-      border: 1px solid #CED4DA;
-      border-radius: 6px;
-      font-size: 13px;
-      color: #495057;
-      outline: none;
+      padding: 6px 10px; border: 1px solid #CBD5E1; border-radius: 6px;
+      font-size: 13px; color: #475569;
     }
-    .ledger-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
+    .ledger-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .ledger-table th {
-      background-color: #F8F9FA;
-      color: #495057;
-      font-weight: 600;
-      padding: 10px 12px;
-      border-bottom: 2px solid #E9ECEF;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
+      background-color: #F8FAFC; color: #475569; font-weight: 600;
+      padding: 10px 12px; border-bottom: 1px solid #E2E8F0; white-space: nowrap;
     }
-    .ledger-table th:hover {
-      background-color: #E9ECEF;
-    }
-    .ledger-table th.sortable::after {
-      content: " ↕";
-      font-size: 11px;
-      color: #ADB5BD;
-    }
-    .ledger-table th.sort-asc::after {
-      content: " ▲";
-      color: #F37321;
-    }
-    .ledger-table th.sort-desc::after {
-      content: " ▼";
-      color: #F37321;
-    }
+    .ledger-table th:hover { background-color: #F1F5F9; }
     .ledger-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #E9ECEF;
-      color: #212529;
+      padding: 11px 12px; border-bottom: 1px solid #F1F5F9; color: #334155;
+      font-variant-numeric: tabular-nums;
     }
-    .ledger-table tr.clickable-row {
-      cursor: pointer;
-      transition: background-color 0.15s;
-    }
-    .ledger-table tr.clickable-row:hover {
-      background-color: #FFF9F5;
-    }
-    .badge-rate {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-      min-width: 58px;
-    }
-    .badge-rate-blue {
-      background: #E7F5FF;
-      color: #1971C2;
-      border: 1px solid #A5D8FF;
-    }
-    .badge-rate-green {
-      background: #EBFBEE;
-      color: #2F9E44;
-      border: 1px solid #B2F2BB;
-    }
-    .badge-rate-orange {
-      background: #FFF4E6;
-      color: #E8590C;
-      border: 1px solid #FFD8A8;
-    }
-    .btn-detail-small {
-      padding: 3px 8px;
-      font-size: 12px;
-      border: 1px solid #CED4DA;
-      background: #FFFFFF;
-      border-radius: 4px;
-      cursor: pointer;
-      color: #495057;
-      transition: all 0.15s;
-    }
-    .btn-detail-small:hover {
-      background: #F37321;
-      color: #FFFFFF;
-      border-color: #F37321;
-    }
-    .btn-memo-small {
-      padding: 3px 8px;
-      font-size: 12px;
-      border: 1px solid #FFD8A8;
-      background: #FFF4E6;
-      border-radius: 4px;
-      cursor: pointer;
-      color: #E8590C;
-      font-weight: 600;
-      transition: all 0.15s;
-    }
-    .btn-memo-small:hover {
-      background: #F37321;
-      color: #FFFFFF;
-      border-color: #F37321;
-    }
-    .btn-memo-small.has-memo {
-      background: #E8590C;
-      color: #FFFFFF;
-      border-color: #D95F12;
-    }
-    .pagination-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 16px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .pagination-info {
-      font-size: 13px;
-      color: #6C757D;
-    }
-    .pagination-controls {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-    }
-    .page-btn {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: #495057;
-      background: #FFFFFF;
-      border: 1px solid #CED4DA;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .page-btn:hover:not(:disabled) {
-      border-color: #F37321;
-      color: #F37321;
-      background: #FFF9F5;
-    }
-    .page-btn.active {
-      background: #F37321;
-      color: #FFFFFF;
-      border-color: #F37321;
-    }
-    .page-btn:disabled {
-      color: #CED4DA;
-      background: #F8F9FA;
-      cursor: not-allowed;
-      border-color: #E9ECEF;
-    }
+    .ledger-table tr.clickable-row:hover { background-color: #F8FAFC; }
 
-    /* 6. 상세 계약 모달/드로어 */
+    .badge-rate {
+      display: inline-block; padding: 2.5px 7px; border-radius: 9999px;
+      font-size: 11px; font-weight: 700; text-align: center; min-width: 58px;
+    }
+    .badge-rate-blue { background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+    .badge-rate-green { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }
+    .badge-rate-orange { background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA; }
+
+    .btn-detail-small {
+      padding: 3px 8px; font-size: 12px; border: 1px solid #CBD5E1;
+      background: #FFFFFF; border-radius: 4px; cursor: pointer; color: #475569;
+    }
+    .btn-detail-small:hover { background: #F37321; color: #FFFFFF; border-color: #F37321; }
+    .btn-memo-small {
+      padding: 3px 8px; font-size: 12px; border: 1px solid #FED7AA;
+      background: #FFF7ED; border-radius: 4px; cursor: pointer; color: #C2410C; font-weight: 600;
+    }
+    .btn-memo-small:hover { background: #F37321; color: #FFFFFF; border-color: #F37321; }
+    .page-btn {
+      min-width: 32px; height: 32px; padding: 0 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF;
+      border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer;
+    }
+    .page-btn:hover:not(:disabled) { border-color: #F37321; color: #F37321; background: #FFF7ED; }
+    .page-btn.active { background: #F37321; color: #FFFFFF; border-color: #F37321; }
+
     .detail-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2500;
-      animation: fadeIn 0.2s;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 2500;
     }
-    .detail-modal-overlay.active {
-      display: flex;
-    }
+    .detail-modal-overlay.active { display: flex; }
     .detail-modal-card {
-      background: #FFFFFF;
-      width: 760px;
-      max-width: 92%;
-      max-height: 88vh;
-      overflow-y: auto;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      background: #FFFFFF; width: 760px; max-width: 92%; max-height: 88vh;
+      overflow-y: auto; border-radius: 10px; padding: 24px;
+      border: 1px solid #E2E8F0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
     .detail-meta-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      background: #F8F9FA;
-      border: 1px solid #E9ECEF;
-      border-radius: 8px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+      background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;
+      padding: 14px 16px; margin-bottom: 18px;
     }
-    .detail-meta-item {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .detail-meta-lbl {
-      font-size: 11px;
-      font-weight: 600;
-      color: #868E96;
-    }
-    .detail-meta-val {
-      font-size: 14px;
-      font-weight: 700;
-      color: #212529;
-    }
+    .detail-meta-lbl { font-size: 11px; font-weight: 600; color: #64748B; }
+    .detail-meta-val { font-size: 14px; font-weight: 700; color: #0F172A; }
 
-    /* 반응형 미디어 쿼리 */
     @media (max-width: 1200px) {
-      .hex-module-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      .filter-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      .hex-module-grid { grid-template-columns: repeat(3, 1fr); }
+      .filter-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 768px) {
-      .hex-module-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .charts-grid-2x2 {
-        grid-template-columns: 1fr;
-      }
-      .filter-grid {
-        grid-template-columns: 1fr;
-      }
+      .hex-module-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid-2x2 { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: 1fr; }
     }
-  </style>
+</style>
 </head>
 <body>
 
