@@ -1216,9 +1216,14 @@
       </div>
       <div class="header-right" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
         <div id="rate-badge" style="display: none; font-size: 12px; color: #495057; background: #F8F9FA; border: 1px solid #E9ECEF; padding: 4px 10px; border-radius: 6px; font-weight: 500;"></div>
-        <button class="btn-primary" id="btn-open-report">
-          📋 주간 보고 요약 만들기
-        </button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn-secondary" id="btn-open-db-config" type="button" style="background:#FFFFFF; color:#495057; border:1px solid #CED4DA; border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
+            ⚙️ DB 설정 <span id="db-status-badge" style="font-size:11px; padding:2px 8px; border-radius:12px; background:#E9ECEF; color:#495057; font-weight:700;">● 로컬</span>
+          </button>
+          <button class="btn-primary" id="btn-open-report">
+            📋 주간 보고 요약 만들기
+          </button>
+        </div>
       </div>
     </header>
 
@@ -1265,11 +1270,14 @@
 
     <!-- 3. 판매 계약 현황 표 -->
     <section class="section-box">
-      <div class="section-header">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
         <div class="section-title">
           <span>📦 판매 계약 현황</span>
-          <span style="font-size: 13px; font-weight: normal; color: #868E96;">(총 12건 / 날짜가 밀린 예상 납기는 빨간 글씨 표기)</span>
+          <span style="font-size: 13px; font-weight: normal; color: #868E96;" id="contracts-table-sub">(총 12건 / 날짜가 밀린 예상 납기는 빨간 글씨 표기)</span>
         </div>
+        <button class="btn-primary" id="btn-open-new-contract" type="button" style="padding: 7px 14px; font-size: 13px;">
+          ➕ 새 계약 등록
+        </button>
       </div>
       <div class="table-container">
         <table>
@@ -1360,6 +1368,105 @@
   <footer class="fixed-footer">
     <span>※ 본 대시보드의 데이터는 <strong>교육용 가상 데이터입니다.</strong></span>
   </footer>
+
+  <!-- Supabase DB 설정 모달 -->
+  <div class="modal-overlay" id="db-config-modal">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Supabase 데이터베이스 연결 설정</div>
+        <button class="modal-close" id="btn-close-db-modal">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: #6C757D; margin-bottom: 16px;">
+        Supabase 프로젝트의 <strong>Project URL</strong>과 <strong>anon public key</strong>를 입력하세요. 접속 정보는 브라우저의 <code>localStorage</code>에만 안전하게 저장되어 웹 배포 시에도 그대로 유지됩니다.
+      </p>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 6px;">Project URL</label>
+        <input type="text" id="supabase-url-input" placeholder="https://your-project.supabase.co" style="width: 100%; padding: 10px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none;">
+        <span style="font-size: 11px; color: #868E96; margin-top: 4px; display: block;">Project Settings &gt; API &gt; Project URL</span>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 6px;">Anon (Public) Key</label>
+        <input type="password" id="supabase-key-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width: 100%; padding: 10px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none;">
+        <span style="font-size: 11px; color: #868E96; margin-top: 4px; display: block;">Project Settings &gt; API &gt; Project API keys (anon public)</span>
+      </div>
+
+      <div id="db-conn-status-msg" style="display: none; padding: 10px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 16px;"></div>
+
+      <div style="background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+        <div style="font-size: 13px; font-weight: 700; color: #212529; margin-bottom: 6px;">📥 샘플 데이터 마이그레이션</div>
+        <p style="font-size: 12px; color: #6C757D; margin-bottom: 10px;">
+          로컬 <code>data.js</code>의 12건 가상 계약 데이터를 Supabase <code>contracts</code> 테이블로 일괄 업로드합니다.
+        </p>
+        <button class="btn-secondary" id="btn-migrate-data" type="button" style="font-size: 12px; padding: 8px 14px; background: #FFF4E6; color: #F37321; border: 1px solid #FFD8A8; cursor: pointer; font-weight: 700; border-radius: 6px;">
+          🚀 기존 샘플 데이터 12건 DB로 업로드
+        </button>
+      </div>
+
+      <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn-secondary" id="btn-disconnect-db" type="button" style="font-size: 12px; color: #E03131; background: #FFF5F5; border: 1px solid #FFC9C9; cursor: pointer;">
+          연결 해제 (로컬 모드)
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" id="btn-cancel-db-modal" type="button">취소</button>
+          <button class="btn-primary" id="btn-save-db-config" type="button">저장 및 연결</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 새 계약 등록 모달 -->
+  <div class="modal-overlay" id="new-contract-modal">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title">➕ 새 계약 등록</div>
+        <button class="modal-close" id="btn-close-new-contract-modal">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: #6C757D; margin-bottom: 16px;">
+        신규 방산 판매 계약 정보를 등록합니다. DB 연결 시 Supabase <code>contracts</code> 테이블에 즉시 저장됩니다.
+      </p>
+
+      <form id="form-new-contract">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 4px;">계약명 (사업명) *</label>
+          <input type="text" id="new-contract-name" required placeholder="예: 차세대 대공레이더 초도양산" style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 4px;">계약업체 (고객/수요처) *</label>
+          <input type="text" id="new-contractor" required placeholder="예: 방위사업청 (국내 해군)" style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 4px;">계약금액 (억원) *</label>
+            <input type="number" id="new-contract-amount" required min="1" placeholder="예: 650" style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 4px;">계약일자 *</label>
+            <input type="date" id="new-contract-date" required style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none;">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 4px;">계약방법</label>
+          <select id="new-contract-method" style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none; background:#FFFFFF;">
+            <option value="수의계약">수의계약</option>
+            <option value="일반경쟁" selected>일반경쟁</option>
+            <option value="제한경쟁">제한경쟁</option>
+            <option value="협상에의한계약">협상에의한계약</option>
+            <option value="2단계경쟁">2단계경쟁</option>
+          </select>
+        </div>
+
+        <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn-secondary" id="btn-cancel-new-contract-modal" type="button">취소</button>
+          <button class="btn-primary" id="btn-submit-new-contract" type="submit">계약 등록</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- 주간 보고 요약 모달 -->
   <div class="modal-overlay" id="report-modal">
@@ -2646,13 +2753,19 @@
 
 
       // ========================================================
-      // 0-C. 첫 번째 탭: 샘플 대시보드 (가상 데이터)
+      // 0-C. 첫 번째 탭: 샘플 대시보드 (Supabase 실시간 연동 & 로컬 폴백)
       // ========================================================
       // 0. 데이터 존재 여부 확인
       if (typeof CONTRACTS === "undefined" || typeof PURCHASE_ORDERS === "undefined") {
         alert("데이터 파일(data.js)을 불러오지 못했습니다. 파일이 같은 docs 폴더에 있는지 확인해 주십시오.");
         return;
       }
+
+      const STORAGE_URL = "supabase_project_url";
+      const STORAGE_KEY = "supabase_anon_key";
+
+      let currentContracts = CONTRACTS.slice(); // 활성 계약 데이터 배열
+      let isSupabaseActive = false;
 
       // 기준일 표기
       document.getElementById("today-badge").textContent = "기준일: " + TODAY;
@@ -2672,352 +2785,426 @@
         }
       }
 
-      // 계약 맵 생성 (ID 기준 빠른 조회)
-      const contractMap = new Map();
-      CONTRACTS.forEach(function (c) {
-        contractMap.set(c.id, c);
-      });
-
-      // ========================================================
-      // 1. 핵심 지표 계산
-      // ========================================================
-
-      // 1) 수주잔고 (단계가 계약, 생산, 납품인 사업의 금액 합산)
-      const activeStages = ["계약", "생산", "납품"];
-      const backlogContracts = CONTRACTS.filter(function (c) {
-        return activeStages.includes(c.stage);
-      });
-      const backlogAmount = backlogContracts.reduce(function (sum, c) {
-        return sum + c.amount;
-      }, 0);
-
-      // 2) 90일 내 납품 예정 사업 (delivery 기준 0 ~ 90일)
-      const day90Contracts = CONTRACTS.filter(function (c) {
-        if (!c.delivery) return false;
-        const d = new Date(c.delivery);
-        const diffDays = Math.round((d - todayDate) / (1000 * 60 * 60 * 24));
-        return diffDays >= 0 && diffDays <= 90;
-      });
-
-      // 3) 판정 규칙 엔진 실행 (적신호 및 황신호 수집)
-      const redList = [];
-      const yellowList = [];
-
-      // [규칙 A] 적신호: 미입고 발주 eta > 해당 계약 plan - 7일
-      PURCHASE_ORDERS.forEach(function (po) {
-        if (po.status === "입고완료") return;
-        const c = contractMap.get(po.forContract);
-        if (!c) return;
-
-        const planDate = new Date(c.plan);
-        const bufferLimitDate = new Date(planDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const etaDate = new Date(po.eta);
-
-        if (etaDate > bufferLimitDate) {
-          redList.push({
-            type: "RED",
-            title: "[" + c.id + "] " + c.name,
-            contract: c,
-            po: po,
-            issue: "부품 입고 지연: '" + po.item + "' (" + po.supplier + ") 입고예정일(" + po.eta + ")이 조립 마감선(" + bufferLimitDate.toISOString().split("T")[0] + ")을 초과하여 최종 납기 위협",
-            recommendation: "담당자(" + po.owner + ") 협력사 현장 방문 및 긴급 납품 독촉, 부품 입고 즉시 야간 조립 공정 투입 대기",
-            owner: po.owner,
-            delivery: c.delivery
-          });
+      // 상태 뱃지 업데이트
+      function updateDbStatusBadge(mode) {
+        const badge = document.getElementById("db-status-badge");
+        if (!badge) return;
+        if (mode === "connected") {
+          badge.textContent = "● Supabase 실시간";
+          badge.style.background = "#EBFBEE";
+          badge.style.color = "#2F9E44";
+          badge.style.border = "1px solid #B2F2BB";
+        } else if (mode === "fallback") {
+          badge.textContent = "● 로컬 폴백";
+          badge.style.background = "#FFF4E6";
+          badge.style.color = "#E8590C";
+          badge.style.border = "1px solid #FFD8A8";
+        } else {
+          badge.textContent = "● 로컬 (data.js)";
+          badge.style.background = "#E9ECEF";
+          badge.style.color = "#495057";
+          badge.style.border = "1px solid #CED4DA";
         }
-      });
+      }
 
-      // [규칙 B] 황신호: 발주 지연 (eta > due 또는 status === '지연')
-      PURCHASE_ORDERS.forEach(function (po) {
-        const isEtaOverDue = po.eta > po.due;
-        const isStatusDelayed = po.status === "지연";
-        if (isEtaOverDue || isStatusDelayed) {
-          // 적신호와 완전히 동일한 건은 중복 표시하지 않고 황신호 고유 건 우선 표기
-          const alreadyRed = redList.some(function (r) {
-            return r.po && r.po.id === po.id;
-          });
-          if (!alreadyRed) {
-            const c = contractMap.get(po.forContract);
-            yellowList.push({
-              type: "YELLOW_PO",
-              title: "[" + po.id + "] " + po.item + " (" + po.supplier + ")",
+      // Supabase 설정 불러오기
+      function getSupabaseConfig() {
+        const url = (localStorage.getItem(STORAGE_URL) || "").trim().replace(/\/$/, "");
+        const key = (localStorage.getItem(STORAGE_KEY) || "").trim();
+        return { url: url, key: key, isValid: Boolean(url && key) };
+      }
+
+      // Supabase에서 계약 목록 가져오기
+      function fetchContractsFromSupabase(config) {
+        if (!config.isValid) return Promise.resolve(null);
+        const endpoint = config.url + "/rest/v1/contracts?select=*&order=contract_date.desc.nullslast";
+        return fetch(endpoint, {
+          method: "GET",
+          headers: {
+            "apikey": config.key,
+            "Authorization": "Bearer " + config.key,
+            "Content-Type": "application/json"
+          }
+        }).then(function (resp) {
+          if (!resp.ok) {
+            throw new Error("HTTP " + resp.status + " " + resp.statusText);
+          }
+          return resp.json();
+        });
+      }
+
+      // Supabase 행 데이터를 대시보드 형식으로 정규화
+      function normalizeSupabaseRows(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) return [];
+        return rows.map(function (r, i) {
+          const name = r.contract_name || r.name || ("계약 " + (i + 1));
+          const customer = r.contractor || r.customer || "수요처 미기재";
+          const amount = Number(r.amount) || 0;
+          const contractDate = r.contract_date || r.contractDate || "2026-09-01";
+          const delivery = r.delivery || r.contract_date || "2026-12-31";
+          const plan = r.plan || delivery;
+          const stage = r.stage || (r.contract_method ? "생산" : "계약");
+          const id = r.id ? String(r.id) : ("S-DB" + String(i + 1).padStart(2, "0"));
+          const owner = r.owner || "담당자";
+          const progress = r.progress !== undefined ? Number(r.progress) : 50;
+          const category = r.category || "방산장비";
+          const region = r.region || "국내";
+          const isExport = r.export !== undefined ? Boolean(r.export) : false;
+
+          return {
+            id: id,
+            name: name,
+            category: category,
+            customer: customer,
+            region: region,
+            stage: stage,
+            amount: amount,
+            contractDate: contractDate,
+            delivery: delivery,
+            plan: plan,
+            owner: owner,
+            export: isExport,
+            progress: progress,
+            contract_method: r.contract_method || "일반경쟁",
+            _fromSupabase: true
+          };
+        });
+      }
+
+      // ========================================================
+      // 1. 대시보드 핵심 렌더링 함수
+      // ========================================================
+      let lastRedList = [];
+      let lastBacklogAmount = 0;
+      let lastBacklogContracts = [];
+      let lastDay90Contracts = [];
+      let lastLicenseActionList = [];
+
+      function renderSampleDashboard(contractsList) {
+        // 계약 맵 생성 (ID 기준 빠른 조회)
+        const contractMap = new Map();
+        contractsList.forEach(function (c) {
+          contractMap.set(c.id, c);
+        });
+
+        // 1) 수주잔고 (단계가 계약, 생산, 납품인 사업의 금액 합산)
+        const activeStages = ["계약", "생산", "납품"];
+        const backlogContracts = contractsList.filter(function (c) {
+          return activeStages.includes(c.stage);
+        });
+        const backlogAmount = backlogContracts.reduce(function (sum, c) {
+          return sum + c.amount;
+        }, 0);
+        lastBacklogAmount = backlogAmount;
+        lastBacklogContracts = backlogContracts;
+
+        document.getElementById("kpi-backlog").innerHTML = Number(backlogAmount).toLocaleString() + '<span class="unit">억원</span>';
+        document.getElementById("kpi-backlog-desc").textContent = "진행 사업 " + backlogContracts.length + "건 합계" + (isSupabaseActive ? " (DB)" : "");
+
+        // 2) 90일 내 납품 예정 사업 (delivery 기준 0 ~ 90일)
+        const day90Contracts = contractsList.filter(function (c) {
+          if (!c.delivery) return false;
+          const d = new Date(c.delivery);
+          const diffDays = Math.round((d - todayDate) / (1000 * 60 * 60 * 24));
+          return diffDays >= 0 && diffDays <= 90;
+        });
+        lastDay90Contracts = day90Contracts;
+        document.getElementById("kpi-day90").innerHTML = day90Contracts.length + '<span class="unit">건</span>';
+
+        // 3) 판정 규칙 엔진 실행 (적신호 및 황신호 수집)
+        const redList = [];
+        const yellowList = [];
+
+        // [규칙 A] 적신호: 미입고 발주 eta > 해당 계약 plan - 7일
+        PURCHASE_ORDERS.forEach(function (po) {
+          if (po.status === "입고완료") return;
+          const c = contractMap.get(po.forContract);
+          if (!c) return;
+
+          const planDate = new Date(c.plan || c.delivery || "2026-12-31");
+          const bufferLimitDate = new Date(planDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const etaDate = new Date(po.eta);
+
+          if (etaDate > bufferLimitDate) {
+            redList.push({
+              type: "RED",
+              title: "[" + c.id + "] " + c.name,
               contract: c,
               po: po,
-              issue: "발주 납기(" + po.due + ") 대비 입고예정일(" + po.eta + ") 지연 (" + (c ? c.name + " 투입 예정" : "") + ")",
-              recommendation: "협력사 공정 진행률 점검 및 입고 지연에 따른 후속 조립 일정 재조정",
+              issue: "부품 입고 지연: '" + po.item + "' (" + po.supplier + ") 입고예정일(" + po.eta + ")이 조립 마감선(" + bufferLimitDate.toISOString().split("T")[0] + ")을 초과하여 최종 납기 위협",
+              recommendation: "담당자(" + po.owner + ") 협력사 현장 방문 및 긴급 납품 독촉, 부품 입고 즉시 야간 조립 공정 투입 대기",
               owner: po.owner,
-              delivery: po.due
+              delivery: c.delivery
             });
           }
-        }
-      });
+        });
 
-      // [규칙 C] 황신호: 계약 납기 지연 예상 (plan > delivery)
-      CONTRACTS.forEach(function (c) {
-        if (c.plan && c.delivery && c.plan > c.delivery) {
-          const diffDays = Math.round((new Date(c.plan) - new Date(c.delivery)) / (1000 * 60 * 60 * 24));
-          yellowList.push({
-            type: "YELLOW_CONTRACT",
-            title: "[" + c.id + "] " + c.name + " (예상 납기 " + diffDays + "일 순연)",
-            contract: c,
-            issue: "계약 납기(" + c.delivery + ") 대비 현재 예상 납기(" + c.plan + ") 지연 발생",
-            recommendation: "공정 만회 대책 수립 및 고객사(" + c.customer + ") 일정 협의 착수",
-            owner: c.owner,
-            delivery: c.delivery
+        // [규칙 B] 황신호: 발주 지연 (eta > due 또는 status === '지연')
+        let delayedPoCount = 0;
+        PURCHASE_ORDERS.forEach(function (po) {
+          const isEtaOverDue = po.eta > po.due;
+          const isStatusDelayed = po.status === "지연";
+          if (isEtaOverDue || isStatusDelayed) {
+            const alreadyRed = redList.some(function (r) {
+              return r.po && r.po.id === po.id;
+            });
+            if (!alreadyRed) {
+              delayedPoCount++;
+              const c = contractMap.get(po.forContract);
+              const cName = c ? c.name : "사업 미상";
+              yellowList.push({
+                type: "YELLOW",
+                category: "발주지연",
+                title: "[" + po.id + "] " + po.item,
+                contract: c,
+                po: po,
+                issue: "협력사(" + po.supplier + ") 입고 지연: 예정일(" + po.eta + ")이 발주 납기(" + po.due + ")보다 늦음 (투입사업: " + cName + ")",
+                recommendation: "담당자(" + po.owner + ") 공정 지연 사유 소명 요청 및 2차 벤더 납기 재점검",
+                owner: po.owner,
+                delivery: po.due
+              });
+            }
+          }
+        });
+
+        // [규칙 C] 황신호: 사업 예상 납기 순연 (plan > delivery)
+        let delayedContractCount = 0;
+        contractsList.forEach(function (c) {
+          if (c.plan && c.delivery && c.plan > c.delivery) {
+            delayedContractCount++;
+            const diffDays = Math.round((new Date(c.plan) - new Date(c.delivery)) / (1000 * 60 * 60 * 24));
+            yellowList.push({
+              type: "YELLOW",
+              category: "납기순연",
+              title: "[" + c.id + "] " + c.name,
+              contract: c,
+              issue: "사업 예상 납기 순연: 현재 예상(" + c.plan + ")이 계약 납기(" + c.delivery + ") 대비 " + diffDays + "일 지연 예상",
+              recommendation: "담당자(" + c.owner + ") 조립 공정 단축 방안 수립 및 고객사(군) 일정 변경 사전 협의 검토",
+              owner: c.owner,
+              delivery: c.delivery
+            });
+          }
+        });
+
+        // [규칙 D] 황신호: 수출허가 조치 필요
+        let licenseRiskCount = 0;
+        const licenseActionList = [];
+        if (typeof EXPORT_LICENSES !== "undefined") {
+          EXPORT_LICENSES.forEach(function (lic) {
+            const c = contractMap.get(lic.contractId);
+            const isRelatedContractActive = c && (c.stage === "생산" || c.stage === "납품");
+            let isRisk = false;
+            let riskReason = "";
+
+            if (lic.expires) {
+              const expDate = new Date(lic.expires);
+              const diffDays = Math.round((expDate - todayDate) / (1000 * 60 * 60 * 24));
+              if (diffDays <= 30) {
+                isRisk = true;
+                riskReason = "허가 만료 D-" + diffDays + " (" + lic.expires + " 만료 예정, 갱신 필요)";
+              }
+            }
+            if (isRelatedContractActive && lic.status !== "승인") {
+              isRisk = true;
+              riskReason = "생산/납품 진행 중 허가 상태 미승인 (" + lic.status + ")";
+            }
+
+            if (isRisk) {
+              licenseRiskCount++;
+              const licItem = {
+                type: "YELLOW",
+                category: "허가리스크",
+                title: "[" + lic.id + "] " + (c ? c.name : lic.contractId) + " 수출허가",
+                contract: c,
+                issue: lic.agency + " (" + lic.type + ") 조치 필요: " + riskReason,
+                recommendation: "수출입통제팀 담당자 즉시 대관 보완 자료 제출 및 허가 연장 신청 착수",
+                owner: c ? c.owner : "수출입통제팀",
+                delivery: lic.expires || "-"
+              };
+              yellowList.push(licItem);
+              licenseActionList.push(licItem);
+            }
           });
         }
-      });
 
-      // [규칙 D] 황신호: 허가 리스크 (expires <= 30일 또는 생산·납품 단계 미승인)
-      const licenseActionList = [];
-      if (typeof LICENSES !== "undefined") {
-        LICENSES.forEach(function (lic) {
-          const c = contractMap.get(lic.forContract);
-          let isExpiringSoon = false;
-          let isStageNotApproved = false;
-          let daysLeft = null;
+        lastRedList = redList;
+        lastLicenseActionList = licenseActionList;
 
-          if (lic.expires) {
-            const expDate = new Date(lic.expires);
-            daysLeft = Math.round((expDate - todayDate) / (1000 * 60 * 60 * 24));
-            if (daysLeft >= 0 && daysLeft <= 30) {
-              isExpiringSoon = true;
-            }
+        // KPI 표시
+        document.getElementById("kpi-red").innerHTML = redList.length + '<span class="unit">건</span>';
+        document.getElementById("kpi-yellow").innerHTML = yellowList.length + '<span class="unit">건</span>';
+        document.getElementById("kpi-yellow-desc").textContent = "발주지연 " + delayedPoCount + " · 납기순연 " + delayedContractCount + " · 허가 " + licenseRiskCount;
+
+        // 2) 지금 조치할 것 리스트 렌더링
+        const actionContainer = document.getElementById("action-list-container");
+        actionContainer.innerHTML = "";
+        const allActions = redList.concat(yellowList);
+        document.getElementById("action-summary-count").textContent = "총 " + allActions.length + "건의 조치 대상 감지 (적신호 " + redList.length + "건, 황신호 " + yellowList.length + "건)";
+
+        if (allActions.length === 0) {
+          actionContainer.innerHTML = '<div style="text-align:center; padding: 24px; color: #2F9E44; font-weight: 600;">✅ 현재 즉각 조치가 필요한 납기 위협 및 지연 항목이 없습니다.</div>';
+        } else {
+          allActions.forEach(function (act) {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "action-item " + (act.type === "RED" ? "alert-red" : "alert-yellow");
+
+            const badgeHtml = act.type === "RED"
+              ? '<span class="action-badge badge-red">적신호: 납기 위협</span>'
+              : '<span class="action-badge badge-yellow">황신호: ' + (act.category || "주의") + '</span>';
+
+            itemDiv.innerHTML =
+              '<div class="action-item-header">' +
+                '<div style="display: flex; align-items: center; gap: 8px;">' +
+                  badgeHtml +
+                  '<span class="action-title">' + act.title + '</span>' +
+                '</div>' +
+                '<span class="action-owner">담당: <strong>' + act.owner + '</strong> | 납기 ' + (act.delivery || '-') + '</span>' +
+              '</div>' +
+              '<div class="action-desc">' + act.issue + '</div>' +
+              '<div class="action-recommendation"><strong>권고 조치:</strong> ' + act.recommendation + '</div>';
+
+            actionContainer.appendChild(itemDiv);
+          });
+        }
+
+        // 3) 판매 계약 현황 표 렌더링
+        const contractsBody = document.getElementById("contracts-table-body");
+        contractsBody.innerHTML = "";
+
+        const subCountEl = document.getElementById("contracts-table-sub");
+        if (subCountEl) {
+          const srcLabel = isSupabaseActive ? "Supabase DB 실시간" : "로컬 data.js";
+          subCountEl.textContent = "(총 " + contractsList.length + "건 / " + srcLabel + " 연동)";
+        }
+
+        contractsList.forEach(function (c) {
+          const tr = document.createElement("tr");
+
+          const isDelayed = c.plan && c.delivery && c.plan > c.delivery;
+          const planHtml = isDelayed
+            ? '<span class="delayed-date">' + c.plan + '</span>'
+            : (c.plan || "-");
+
+          let statusBadge = '<span class="tag-status">정상</span>';
+          const isRed = redList.some(function (r) {
+            return r.contract && r.contract.id === c.id;
+          });
+
+          if (isRed) {
+            statusBadge = '<span class="tag-status warning">🔴 납기위협</span>';
+          } else if (isDelayed) {
+            statusBadge = '<span class="tag-status warning" style="color: #F59F00; border-color: #FFE066; background-color: #FFF9DB;">🟡 납기순연</span>';
           }
 
-          if (c && ["생산", "납품"].includes(c.stage)) {
-            if (lic.status !== "승인") {
-              isStageNotApproved = true;
-            }
+          let usdText = "";
+          if (c.export && hasRate) {
+            const usdMillions = ((c.amount * 100) / RATE.원화).toFixed(1);
+            usdText = ' <span class="usd-amount" style="font-size: 11px; color: #868E96; font-weight: normal;">(약 $' + usdMillions + 'M)</span>';
           }
 
-          if (isExpiringSoon || isStageNotApproved) {
-            licenseActionList.push(lic);
-            let issueText = "";
-            let recText = "";
+          tr.innerHTML =
+            '<td><strong>' + c.id + '</strong></td>' +
+            '<td>' + c.name + (c.export ? ' <span style="font-size: 11px; color:#F37321;">[수출]</span>' : '') + '</td>' +
+            '<td>' + c.category + '</td>' +
+            '<td>' + c.customer + '</td>' +
+            '<td><span class="tag-status">' + c.stage + '</span></td>' +
+            '<td class="text-right"><strong>' + Number(c.amount).toLocaleString() + '</strong>억' + usdText + '</td>' +
+            '<td>' + (c.delivery || "-") + '</td>' +
+            '<td>' + planHtml + '</td>' +
+            '<td class="text-center">' + (c.progress !== undefined ? c.progress + '%' : '-') + '</td>' +
+            '<td>' + c.owner + '</td>' +
+            '<td>' + statusBadge + '</td>';
 
-            if (isExpiringSoon) {
-              issueText = "수출허가 만료 임박: '" + lic.type + "' 유효기간(" + lic.expires + ")까지 " + daysLeft + "일 남음 (" + (c ? c.name : "") + ")";
-              recText = "담당자(" + lic.owner + ") 즉시 허가 연장 신청서 작성 및 관계 부처 접수";
-            } else {
-              issueText = "필수 허가 미승인: '" + (c ? c.name : "") + "'이(가) " + (c ? c.stage : "") + " 단계이나 " + lic.type + " 상태가 '" + lic.status + "'임";
-              recText = "수출 심사 진행 상황 긴급 확인 및 방사청 대관 협의 추진";
-            }
-
-            yellowList.push({
-              type: "YELLOW_LICENSE",
-              title: "[" + lic.id + "] " + lic.type + " 조치 필요",
-              contract: c,
-              issue: issueText,
-              recommendation: recText,
-              owner: lic.owner,
-              delivery: lic.expires || "-"
-            });
-          }
+          contractsBody.appendChild(tr);
         });
+
+        // 4) 구매 발주 현황 표 렌더링
+        const ordersBody = document.getElementById("orders-table-body");
+        ordersBody.innerHTML = "";
+
+        PURCHASE_ORDERS.forEach(function (po) {
+          const tr = document.createElement("tr");
+
+          const isEtaDelayed = po.eta && po.due && po.eta > po.due;
+          const isStatusDelayed = po.status === "지연";
+
+          const etaHtml = isEtaDelayed
+            ? '<span class="delayed-date">' + po.eta + '</span>'
+            : (po.eta || "-");
+
+          let statusTag = '<span class="tag-status">' + po.status + '</span>';
+          if (isStatusDelayed) {
+            statusTag = '<span class="tag-status warning">지연</span>';
+          } else if (po.status === "입고완료") {
+            statusTag = '<span class="tag-status success">입고완료</span>';
+          }
+
+          const linkedContract = contractMap.get(po.forContract);
+          const contractText = linkedContract ? (po.forContract + ' (' + linkedContract.name.substring(0, 10) + '...)') : po.forContract;
+
+          tr.innerHTML =
+            '<td><strong>' + po.id + '</strong></td>' +
+            '<td>' + po.item + '</td>' +
+            '<td>' + po.supplier + '</td>' +
+            '<td>' + po.category + '</td>' +
+            '<td>' + statusTag + '</td>' +
+            '<td class="text-right">' + po.amount + '억</td>' +
+            '<td>' + po.due + '</td>' +
+            '<td>' + etaHtml + '</td>' +
+            '<td><span title="' + (linkedContract ? linkedContract.name : '') + '">' + contractText + '</span></td>' +
+            '<td class="text-center">' + (po.longLead ? '<span style="color:#F37321; font-weight:600;">장납기</span>' : '-') + (po.itar ? ' / ITAR' : '') + '</td>' +
+            '<td>' + po.owner + '</td>';
+
+          ordersBody.appendChild(tr);
+        });
+
+        // 5) 협력사 납기 준수율 막대 그래프 렌더링
+        if (typeof SUPPLIERS !== "undefined" && typeof ONTIME_TARGET !== "undefined") {
+          const supplierListBody = document.getElementById("supplier-list-body");
+          supplierListBody.innerHTML = "";
+
+          const underTargetList = SUPPLIERS.filter(function (s) {
+            return s.onTime < ONTIME_TARGET;
+          });
+          document.getElementById("supplier-summary-count").textContent = "목표 " + ONTIME_TARGET + "% 미달 [관리] 대상: " + underTargetList.length + "개사 (총 " + SUPPLIERS.length + "개사)";
+
+          SUPPLIERS.forEach(function (s) {
+            const isUnder = s.onTime < ONTIME_TARGET;
+            const row = document.createElement("div");
+            row.className = "supplier-row";
+
+            const manageBadge = isUnder ? '<span class="badge-manage">관리</span>' : '';
+            const barClass = isUnder ? 'warning' : 'normal';
+
+            row.innerHTML =
+              '<div class="supplier-name-col">' +
+                '<span class="supplier-name">' + s.name + '</span>' +
+                manageBadge +
+              '</div>' +
+              '<div class="supplier-bar-track">' +
+                '<div class="supplier-bar-fill ' + barClass + '" style="width: ' + s.onTime + '%;"></div>' +
+              '</div>' +
+              '<div class="supplier-value-col">' +
+                '<span style="' + (isUnder ? 'color: #E03131; font-weight: 700;' : '') + '">' + s.onTime + '%</span> ' +
+                '<span style="font-size: 11px; color: #868E96; font-weight: normal;">(' + s.orders + '건)</span>' +
+              '</div>';
+
+            supplierListBody.appendChild(row);
+          });
+        }
       }
 
-      // 지표 카드에 수치 반영
-      document.getElementById("kpi-backlog").innerHTML = Number(backlogAmount).toLocaleString() + '<span class="unit">억원</span>';
-      document.getElementById("kpi-backlog-desc").textContent = "확정 사업 " + backlogContracts.length + "건 합계";
-      document.getElementById("kpi-day90").innerHTML = day90Contracts.length + '<span class="unit">건</span>';
-      document.getElementById("kpi-red").innerHTML = redList.length + '<span class="unit">건</span>';
-      document.getElementById("kpi-yellow").innerHTML = yellowList.length + '<span class="unit">건</span>';
-      const yellowPoCount = yellowList.filter(function (i) { return i.type === "YELLOW_PO"; }).length;
-      const yellowContractCount = yellowList.filter(function (i) { return i.type === "YELLOW_CONTRACT"; }).length;
-      const yellowLicenseCount = yellowList.filter(function (i) { return i.type === "YELLOW_LICENSE"; }).length;
-      document.getElementById("kpi-yellow-desc").textContent = "발주지연 " + yellowPoCount + " · 납기순연 " + yellowContractCount + " · 허가 " + yellowLicenseCount;
-
-      // ========================================================
-      // 2. 지금 조치할 것 (우선순위 카드 렌더링)
-      // ========================================================
-      const actionContainer = document.getElementById("action-list-container");
-      actionContainer.innerHTML = "";
-
-      const totalActions = redList.length + yellowList.length;
-      document.getElementById("action-summary-count").textContent = "긴급 적신호 " + redList.length + "건 / 주의 황신호 " + yellowList.length + "건 (적신호 포함 발주지연 1건 중복 제외)";
-
-      // 적신호 먼저 렌더링
-      redList.forEach(function (item) {
-        const div = document.createElement("div");
-        div.className = "action-item red-border";
-        div.innerHTML =
-          '<div><span class="action-badge badge-red">🚨 적신호: 납기위협</span></div>' +
-          '<div>' +
-            '<div class="action-content-title">' + item.title + '</div>' +
-            '<div class="action-issue">' + item.issue + '</div>' +
-            '<div class="action-recommendation">👉 <strong>권고 조치:</strong> ' + item.recommendation + '</div>' +
-          '</div>' +
-          '<div class="action-meta">' +
-            '<div>계약 납기: <strong>' + (item.delivery || "-") + '</strong></div>' +
-            '<div>담당: <strong>' + item.owner + '</strong></div>' +
-          '</div>';
-        actionContainer.appendChild(div);
-      });
-
-      // 황신호 뒤에 렌더링
-      yellowList.forEach(function (item) {
-        let badgeText = "🟡 주의: 지연/허가";
-        if (item.type === "YELLOW_PO") badgeText = "🟡 주의: 입고지연";
-        if (item.type === "YELLOW_CONTRACT") badgeText = "🟡 주의: 납기순연";
-        if (item.type === "YELLOW_LICENSE") badgeText = "🟡 주의: 허가관리";
-
-        const div = document.createElement("div");
-        div.className = "action-item yellow-border";
-        div.innerHTML =
-          '<div><span class="action-badge badge-yellow">' + badgeText + '</span></div>' +
-          '<div>' +
-            '<div class="action-content-title">' + item.title + '</div>' +
-            '<div class="action-issue">' + item.issue + '</div>' +
-            '<div class="action-recommendation">👉 <strong>권고 조치:</strong> ' + item.recommendation + '</div>' +
-          '</div>' +
-          '<div class="action-meta">' +
-            '<div>기한/일정: <strong>' + (item.delivery || "-") + '</strong></div>' +
-            '<div>담당: <strong>' + item.owner + '</strong></div>' +
-          '</div>';
-        actionContainer.appendChild(div);
-      });
-
-      // ========================================================
-      // 3. 판매 계약 현황 표 렌더링
-      // ========================================================
-      const contractsBody = document.getElementById("contracts-table-body");
-      contractsBody.innerHTML = "";
-
-      CONTRACTS.forEach(function (c) {
-        const tr = document.createElement("tr");
-
-        // 날짜가 밀린 경우(plan > delivery) 빨간 글씨 처리
-        const isDelayed = c.plan && c.delivery && c.plan > c.delivery;
-        const planHtml = isDelayed
-          ? '<span class="delayed-date">' + c.plan + ' (지연)</span>'
-          : (c.plan || "-");
-
-        // 계약 신호 판정
-        let statusBadge = '<span class="tag-status success">정상</span>';
-        const hasRed = redList.some(function (r) { return r.contract && r.contract.id === c.id; });
-        if (hasRed) {
-          statusBadge = '<span class="tag-status warning">🔴 납기위협</span>';
-        } else if (isDelayed) {
-          statusBadge = '<span class="tag-status warning" style="color: #F59F00; border-color: #FFE066; background-color: #FFF9DB;">🟡 납기순연</span>';
-        }
-
-        let usdText = "";
-        if (c.export && hasRate) {
-          const usdMillions = ((c.amount * 100) / RATE.원화).toFixed(1);
-          usdText = ' <span class="usd-amount" style="font-size: 11px; color: #868E96; font-weight: normal;">(약 $' + usdMillions + 'M)</span>';
-        }
-
-        tr.innerHTML =
-          '<td><strong>' + c.id + '</strong></td>' +
-          '<td>' + c.name + (c.export ? ' <span style="font-size: 11px; color:#F37321;">[수출]</span>' : '') + '</td>' +
-          '<td>' + c.category + '</td>' +
-          '<td>' + c.customer + '</td>' +
-          '<td><span class="tag-status">' + c.stage + '</span></td>' +
-          '<td class="text-right"><strong>' + Number(c.amount).toLocaleString() + '</strong>억' + usdText + '</td>' +
-          '<td>' + (c.delivery || "-") + '</td>' +
-          '<td>' + planHtml + '</td>' +
-          '<td class="text-center">' + (c.progress !== undefined ? c.progress + '%' : '-') + '</td>' +
-          '<td>' + c.owner + '</td>' +
-          '<td>' + statusBadge + '</td>';
-
-        contractsBody.appendChild(tr);
-      });
-
-      // ========================================================
-      // 4. 구매 발주 현황 표 렌더링
-      // ========================================================
-      const ordersBody = document.getElementById("orders-table-body");
-      ordersBody.innerHTML = "";
-
-      PURCHASE_ORDERS.forEach(function (po) {
-        const tr = document.createElement("tr");
-
-        // 입고예정일(eta)이 발주납기(due)보다 밀린 경우 빨간 글씨
-        const isEtaDelayed = po.eta && po.due && po.eta > po.due;
-        const isStatusDelayed = po.status === "지연";
-
-        const etaHtml = isEtaDelayed
-          ? '<span class="delayed-date">' + po.eta + '</span>'
-          : (po.eta || "-");
-
-        let statusTag = '<span class="tag-status">' + po.status + '</span>';
-        if (isStatusDelayed) {
-          statusTag = '<span class="tag-status warning">지연</span>';
-        } else if (po.status === "입고완료") {
-          statusTag = '<span class="tag-status success">입고완료</span>';
-        }
-
-        const linkedContract = contractMap.get(po.forContract);
-        const contractText = linkedContract ? (po.forContract + ' (' + linkedContract.name.substring(0, 10) + '...)') : po.forContract;
-
-        tr.innerHTML =
-          '<td><strong>' + po.id + '</strong></td>' +
-          '<td>' + po.item + '</td>' +
-          '<td>' + po.supplier + '</td>' +
-          '<td>' + po.category + '</td>' +
-          '<td>' + statusTag + '</td>' +
-          '<td class="text-right">' + po.amount + '억</td>' +
-          '<td>' + po.due + '</td>' +
-          '<td>' + etaHtml + '</td>' +
-          '<td><span title="' + (linkedContract ? linkedContract.name : '') + '">' + contractText + '</span></td>' +
-          '<td class="text-center">' + (po.longLead ? '<span style="color:#F37321; font-weight:600;">장납기</span>' : '-') + (po.itar ? ' / ITAR' : '') + '</td>' +
-          '<td>' + po.owner + '</td>';
-
-        ordersBody.appendChild(tr);
-      });
-
-      // ========================================================
-      // 5. 협력사 납기 준수율 막대 그래프 렌더링
-      // ========================================================
-      if (typeof SUPPLIERS !== "undefined" && typeof ONTIME_TARGET !== "undefined") {
-        const supplierListBody = document.getElementById("supplier-list-body");
-        supplierListBody.innerHTML = "";
-
-        const underTargetList = SUPPLIERS.filter(function (s) {
-          return s.onTime < ONTIME_TARGET;
-        });
-        document.getElementById("supplier-summary-count").textContent = "목표 " + ONTIME_TARGET + "% 미달 [관리] 대상: " + underTargetList.length + "개사 (총 " + SUPPLIERS.length + "개사)";
-
-        SUPPLIERS.forEach(function (s) {
-          const isUnder = s.onTime < ONTIME_TARGET;
-          const row = document.createElement("div");
-          row.className = "supplier-row";
-
-          const manageBadge = isUnder ? '<span class="badge-manage">관리</span>' : '';
-          const barClass = isUnder ? 'warning' : 'normal';
-
-          row.innerHTML =
-            '<div class="supplier-name-col">' +
-              '<span class="supplier-name">' + s.name + '</span>' +
-              manageBadge +
-            '</div>' +
-            '<div class="supplier-bar-track">' +
-              '<div class="supplier-bar-fill ' + barClass + '" style="width: ' + s.onTime + '%;"></div>' +
-            '</div>' +
-            '<div class="supplier-value-col">' +
-              '<span style="' + (isUnder ? 'color: #E03131; font-weight: 700;' : '') + '">' + s.onTime + '%</span> ' +
-              '<span style="font-size: 11px; color: #868E96; font-weight: normal;">(' + s.orders + '건)</span>' +
-            '</div>';
-
-          supplierListBody.appendChild(row);
-        });
-      }
-
-      // ========================================================
       // 6. 주간 보고 요약 5줄 생성 및 복사 기능
-      // ========================================================
       const reportModal = document.getElementById("report-modal");
       const reportTextarea = document.getElementById("report-text");
       const toastMsg = document.getElementById("toast-msg");
 
       function generateReportText() {
-        const redContractName = redList.length > 0 ? (redList[0].contract ? redList[0].contract.name : "S-2601") : "없음";
-        const redPoItem = redList.length > 0 ? (redList[0].po ? redList[0].po.item : "부품") : "";
-        const redOwner = redList.length > 0 ? redList[0].owner : "담당자";
+        const redContractName = lastRedList.length > 0 ? (lastRedList[0].contract ? lastRedList[0].contract.name : "S-2601") : "없음";
+        const redPoItem = lastRedList.length > 0 ? (lastRedList[0].po ? lastRedList[0].po.item : "부품") : "";
+        const redOwner = lastRedList.length > 0 ? lastRedList[0].owner : "담당자";
 
-        // 납기 순연 계약 목록 동적 집계
-        const delayedContracts = CONTRACTS.filter(function (c) {
+        const delayedContracts = currentContracts.filter(function (c) {
           return c.plan && c.delivery && c.plan > c.delivery;
         });
         let delayedSummary = "없음";
@@ -3029,10 +3216,10 @@
 
         const lines = [
           "[주간 구매·납기 현황 요약 (기준일: " + TODAY + ")]",
-          "1. 수주 잔고: 총 " + Number(backlogAmount).toLocaleString() + "억원 (진행 사업 " + backlogContracts.length + "건 / 90일 내 납품 예정 " + day90Contracts.length + "건)",
-          "2. 긴급 적신호: " + redList.length + "건 (" + redContractName + " - " + redPoItem + " 입고 지연으로 최종 군 납기 위협)",
+          "1. 수주 잔고: 총 " + Number(lastBacklogAmount).toLocaleString() + "억원 (진행 사업 " + lastBacklogContracts.length + "건 / 90일 내 납품 예정 " + lastDay90Contracts.length + "건)",
+          "2. 긴급 적신호: " + lastRedList.length + "건 (" + redContractName + " - " + redPoItem + " 입고 지연으로 최종 군 납기 위협)",
           "3. 납기 순연 예상: " + delayedContracts.length + "건 (" + delayedSummary + ")",
-          "4. 규제·허가 조치 필요: " + licenseActionList.length + "건 (S-2604 해외 부품 재수출 심사중, S-2605 허가 만료 26일 남음)",
+          "4. 규제·허가 조치 필요: " + lastLicenseActionList.length + "건 (S-2604 해외 부품 재수출 심사중, S-2605 허가 만료 26일 남음)",
           "5. 종합 조치 계획: " + redOwner + " 담당자 협력사 가 현장 실사 독촉 및 S-2604 허가 대관 협의 긴급 착수"
         ];
         return lines.join("\n");
@@ -3053,7 +3240,6 @@
         if (e.target === reportModal) closeModal();
       });
 
-      // 클립보드 복사 함수 (로컬 file:/// 환경 호환)
       function copyToClipboard(text) {
         if (navigator.clipboard && window.isSecureContext) {
           return navigator.clipboard.writeText(text);
@@ -3078,16 +3264,339 @@
         }
       }
 
+      function showToast(msg) {
+        if (!toastMsg) return;
+        toastMsg.textContent = msg;
+        toastMsg.classList.add("active");
+        setTimeout(function () {
+          toastMsg.classList.remove("active");
+        }, 2800);
+      }
+
       document.getElementById("btn-copy-report").addEventListener("click", function () {
         copyToClipboard(reportTextarea.value).then(function () {
-          toastMsg.classList.add("active");
-          setTimeout(function () {
-            toastMsg.classList.remove("active");
-          }, 3000);
-        }).catch(function () {
-          alert("복사에 실패했습니다. 텍스트 창을 직접 선택하여 복사해 주세요.");
+          showToast("클립보드에 복사되었습니다! 필요한 곳에 Ctrl+V로 붙여넣으세요.");
         });
       });
+
+      // ========================================================
+      // 7. Supabase 비동기 데이터 초기화 및 모달 인터랙션
+      // ========================================================
+      const dbModal = document.getElementById("db-config-modal");
+      const btnOpenDbConfig = document.getElementById("btn-open-db-config");
+      const btnCloseDbModal = document.getElementById("btn-close-db-modal");
+      const btnCancelDbModal = document.getElementById("btn-cancel-db-modal");
+      const btnSaveDbConfig = document.getElementById("btn-save-db-config");
+      const btnDisconnectDb = document.getElementById("btn-disconnect-db");
+      const btnMigrateData = document.getElementById("btn-migrate-data");
+      const inputDbUrl = document.getElementById("supabase-url-input");
+      const inputDbKey = document.getElementById("supabase-key-input");
+      const dbStatusMsg = document.getElementById("db-conn-status-msg");
+
+      function openDbModal() {
+        const config = getSupabaseConfig();
+        if (inputDbUrl) inputDbUrl.value = config.url;
+        if (inputDbKey) inputDbKey.value = config.key;
+        if (dbStatusMsg) {
+          dbStatusMsg.style.display = "none";
+          dbStatusMsg.textContent = "";
+        }
+        if (dbModal) dbModal.classList.add("active");
+      }
+
+      function closeDbModal() {
+        if (dbModal) dbModal.classList.remove("active");
+      }
+
+      if (btnOpenDbConfig) btnOpenDbConfig.addEventListener("click", openDbModal);
+      if (btnCloseDbModal) btnCloseDbModal.addEventListener("click", closeDbModal);
+      if (btnCancelDbModal) btnCancelDbModal.addEventListener("click", closeDbModal);
+      if (dbModal) {
+        dbModal.addEventListener("click", function (e) {
+          if (e.target === dbModal) closeDbModal();
+        });
+      }
+
+      // DB 설정 저장 및 즉시 연결 테스트
+      if (btnSaveDbConfig) {
+        btnSaveDbConfig.addEventListener("click", function () {
+          const url = (inputDbUrl ? inputDbUrl.value : "").trim().replace(/\/$/, "");
+          const key = (inputDbKey ? inputDbKey.value : "").trim();
+
+          if (!url || !key) {
+            alert("Project URL과 Anon Key를 모두 입력해 주십시오.");
+            return;
+          }
+
+          localStorage.setItem(STORAGE_URL, url);
+          localStorage.setItem(STORAGE_KEY, key);
+
+          if (dbStatusMsg) {
+            dbStatusMsg.style.display = "block";
+            dbStatusMsg.style.background = "#E7F5FF";
+            dbStatusMsg.style.color = "#1971C2";
+            dbStatusMsg.textContent = "🔄 Supabase 연결 확인 중...";
+          }
+
+          loadSupabaseData(true).then(function (success) {
+            if (success) {
+              if (dbStatusMsg) {
+                dbStatusMsg.style.background = "#EBFBEE";
+                dbStatusMsg.style.color = "#2F9E44";
+                dbStatusMsg.textContent = "✅ 연결 성공! Supabase의 contracts 데이터를 실시간으로 로드했습니다.";
+              }
+              showToast("Supabase 연결 성공! 실시간 데이터가 반영되었습니다.");
+              setTimeout(closeDbModal, 1200);
+            } else {
+              if (dbStatusMsg) {
+                dbStatusMsg.style.background = "#FFF5F5";
+                dbStatusMsg.style.color = "#E03131";
+                dbStatusMsg.textContent = "❌ 연결 실패. URL/Key를 확인하거나 Table Editor에 contracts 테이블이 생성되었는지 확인하세요. (로컬 데이터로 유지됨)";
+              }
+            }
+          });
+        });
+      }
+
+      // 연결 해제 (로컬 모드 복귀)
+      if (btnDisconnectDb) {
+        btnDisconnectDb.addEventListener("click", function () {
+          localStorage.removeItem(STORAGE_URL);
+          localStorage.removeItem(STORAGE_KEY);
+          if (inputDbUrl) inputDbUrl.value = "";
+          if (inputDbKey) inputDbKey.value = "";
+          isSupabaseActive = false;
+          currentContracts = CONTRACTS.slice();
+          updateDbStatusBadge("local");
+          renderSampleDashboard(currentContracts);
+          if (dbStatusMsg) {
+            dbStatusMsg.style.display = "block";
+            dbStatusMsg.style.background = "#F8F9FA";
+            dbStatusMsg.style.color = "#495057";
+            dbStatusMsg.textContent = "ℹ️ DB 연결이 해제되어 로컬 가상 데이터(data.js) 모드로 전환되었습니다.";
+          }
+          showToast("로컬 모드로 전환되었습니다.");
+        });
+      }
+
+      // 기존 샘플 데이터 12건 DB로 업로드 (마이그레이션)
+      if (btnMigrateData) {
+        btnMigrateData.addEventListener("click", function () {
+          const config = getSupabaseConfig();
+          if (!config.isValid) {
+            alert("먼저 Project URL과 Anon Key를 입력하고 [저장 및 연결]을 진행해 주십시오.");
+            return;
+          }
+
+          btnMigrateData.disabled = true;
+          btnMigrateData.textContent = "⏳ 업로드 진행 중...";
+
+          const payload = CONTRACTS.map(function (c) {
+            return {
+              contract_name: c.name,
+              contractor: c.customer,
+              amount: c.amount,
+              contract_date: c.contractDate || "2026-01-01",
+              contract_method: c.export ? "수의계약" : "일반경쟁"
+            };
+          });
+
+          fetch(config.url + "/rest/v1/contracts", {
+            method: "POST",
+            headers: {
+              "apikey": config.key,
+              "Authorization": "Bearer " + config.key,
+              "Content-Type": "application/json",
+              "Prefer": "return=representation"
+            },
+            body: JSON.stringify(payload)
+          }).then(function (resp) {
+            if (!resp.ok) {
+              return resp.text().then(function (txt) {
+                throw new Error("HTTP " + resp.status + ": " + txt);
+              });
+            }
+            return resp.json();
+          }).then(function () {
+            btnMigrateData.disabled = false;
+            btnMigrateData.textContent = "🚀 기존 샘플 데이터 12건 DB로 업로드";
+            alert("✅ 성공! 기존 12건의 가상 계약 데이터가 Supabase contracts 테이블로 업로드되었습니다.");
+            loadSupabaseData(true);
+          }).catch(function (err) {
+            btnMigrateData.disabled = false;
+            btnMigrateData.textContent = "🚀 기존 샘플 데이터 12건 DB로 업로드";
+            alert("❌ 업로드 실패: " + err.message + "\n\nSupabase Table Editor에 'contracts' 테이블과 컬럼(contract_name, contractor, amount, contract_date, contract_method)이 생성되어 있는지 확인해 주십시오.");
+          });
+        });
+      }
+
+      // ========================================================
+      // 8. 새 계약 등록 모달 인터랙션
+      // ========================================================
+      const newContractModal = document.getElementById("new-contract-modal");
+      const btnOpenNewContract = document.getElementById("btn-open-new-contract");
+      const btnCloseNewContractModal = document.getElementById("btn-close-new-contract-modal");
+      const btnCancelNewContractModal = document.getElementById("btn-cancel-new-contract-modal");
+      const formNewContract = document.getElementById("form-new-contract");
+      const inputNewDate = document.getElementById("new-contract-date");
+
+      function openNewContractModal() {
+        if (inputNewDate && !inputNewDate.value) {
+          inputNewDate.value = new Date().toISOString().slice(0, 10);
+        }
+        if (newContractModal) newContractModal.classList.add("active");
+      }
+
+      function closeNewContractModal() {
+        if (newContractModal) newContractModal.classList.remove("active");
+      }
+
+      if (btnOpenNewContract) btnOpenNewContract.addEventListener("click", openNewContractModal);
+      if (btnCloseNewContractModal) btnCloseNewContractModal.addEventListener("click", closeNewContractModal);
+      if (btnCancelNewContractModal) btnCancelNewContractModal.addEventListener("click", closeNewContractModal);
+      if (newContractModal) {
+        newContractModal.addEventListener("click", function (e) {
+          if (e.target === newContractModal) closeNewContractModal();
+        });
+      }
+
+      if (formNewContract) {
+        formNewContract.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const name = document.getElementById("new-contract-name").value.trim();
+          const contractor = document.getElementById("new-contractor").value.trim();
+          const amount = parseInt(document.getElementById("new-contract-amount").value, 10) || 0;
+          const contractDate = document.getElementById("new-contract-date").value;
+          const method = document.getElementById("new-contract-method").value;
+
+          if (!name || !contractor || !amount) {
+            alert("필수 항목을 모두 입력해 주십시오.");
+            return;
+          }
+
+          const submitBtn = document.getElementById("btn-submit-new-contract");
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "저장 중...";
+          }
+
+          const config = getSupabaseConfig();
+
+          if (config.isValid && isSupabaseActive) {
+            // Supabase DB에 직접 추가
+            fetch(config.url + "/rest/v1/contracts", {
+              method: "POST",
+              headers: {
+                "apikey": config.key,
+                "Authorization": "Bearer " + config.key,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+              },
+              body: JSON.stringify({
+                contract_name: name,
+                contractor: contractor,
+                amount: amount,
+                contract_date: contractDate,
+                contract_method: method
+              })
+            }).then(function (resp) {
+              if (!resp.ok) {
+                return resp.text().then(function (t) { throw new Error(t); });
+              }
+              return resp.json();
+            }).then(function () {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "계약 등록";
+              }
+              formNewContract.reset();
+              closeNewContractModal();
+              showToast("✅ 새 계약 [" + name + "]이 Supabase DB에 저장되었습니다!");
+              loadSupabaseData(true);
+            }).catch(function (err) {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "계약 등록";
+              }
+              alert("❌ Supabase DB 저장 실패: " + err.message);
+            });
+          } else {
+            // 로컬 모드: 메모리에 추가 후 즉시 재렌더링
+            const newId = "S-NEW" + String(currentContracts.length + 1).padStart(2, "0");
+            const newObj = {
+              id: newId,
+              name: name,
+              category: "방산장비",
+              customer: contractor,
+              region: "국내",
+              stage: "계약",
+              amount: amount,
+              contractDate: contractDate,
+              delivery: contractDate,
+              plan: contractDate,
+              owner: "담당자",
+              export: false,
+              progress: 0,
+              contract_method: method,
+              _fromSupabase: false
+            };
+            currentContracts.unshift(newObj);
+            renderSampleDashboard(currentContracts);
+
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = "계약 등록";
+            }
+            formNewContract.reset();
+            closeNewContractModal();
+            showToast("ℹ️ 새 계약 [" + name + "]이 로컬 대시보드에 추가되었습니다. (DB 연결 시 영구 저장)");
+          }
+        });
+      }
+
+      // ========================================================
+      // 9. 초기 데이터 로드 (Supabase 우선 시도 -> 실패 시 data.js 자동 폴백)
+      // ========================================================
+      function loadSupabaseData(showFeedback) {
+        const config = getSupabaseConfig();
+        if (!config.isValid) {
+          isSupabaseActive = false;
+          currentContracts = CONTRACTS.slice();
+          updateDbStatusBadge("local");
+          renderSampleDashboard(currentContracts);
+          return Promise.resolve(false);
+        }
+
+        return fetchContractsFromSupabase(config).then(function (rows) {
+          if (Array.isArray(rows) && rows.length > 0) {
+            isSupabaseActive = true;
+            currentContracts = normalizeSupabaseRows(rows);
+            updateDbStatusBadge("connected");
+            renderSampleDashboard(currentContracts);
+            return true;
+          } else if (Array.isArray(rows) && rows.length === 0) {
+            // 테이블은 있으나 데이터가 0건인 경우
+            isSupabaseActive = true;
+            currentContracts = [];
+            updateDbStatusBadge("connected");
+            renderSampleDashboard(currentContracts);
+            return true;
+          } else {
+            throw new Error("Invalid response format");
+          }
+        }).catch(function (err) {
+          console.warn("Supabase 연결 실패 (자동 로컬 폴백 작동):", err);
+          isSupabaseActive = false;
+          currentContracts = CONTRACTS.slice();
+          updateDbStatusBadge("fallback");
+          renderSampleDashboard(currentContracts);
+          return false;
+        });
+      }
+
+      // 초기 실행
+      loadSupabaseData(false);
 
     })();
   </script>
