@@ -3425,7 +3425,15 @@
           }).catch(function (err) {
             btnMigrateData.disabled = false;
             btnMigrateData.textContent = "🚀 기존 샘플 데이터 12건 DB로 업로드";
-            alert("❌ 업로드 실패: " + err.message + "\n\nSupabase Table Editor에 'contracts' 테이블과 컬럼(contract_name, contractor, amount, contract_date, contract_method)이 생성되어 있는지 확인해 주십시오.");
+            if (err.message && err.message.includes("row-level security")) {
+              alert("❌ 업로드 실패 (Supabase RLS 보안 정책 차단):\n\n" +
+                "Supabase의 Row Level Security(행 보안 정책)가 켜져 있어 쓰기(Insert)가 차단되었습니다.\n\n" +
+                "👉 [해결 방법]:\n" +
+                "1. Supabase 웹사이트 > Table Editor(표 아이콘) > 'contracts' 테이블을 엽니다.\n" +
+                "2. 테이블 우측 상단의 [RLS enabled] 버튼을 클릭하고 [Disable RLS]를 선택해 끄시면 바로 업로드됩니다!");
+            } else {
+              alert("❌ 업로드 실패: " + err.message + "\n\nSupabase Table Editor에 'contracts' 테이블과 컬럼(contract_name, contractor, amount, contract_date, contract_method)이 생성되어 있는지 확인해 주십시오.");
+            }
           });
         });
       }
@@ -3519,7 +3527,12 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = "계약 등록";
               }
-              alert("❌ Supabase DB 저장 실패: " + err.message);
+              if (err.message && err.message.includes("row-level security")) {
+                alert("❌ Supabase DB 저장 실패 (RLS 보안 정책 차단):\n\n" +
+                  "Supabase Table Editor에서 'contracts' 테이블 우측 상단의 [RLS enabled]를 클릭하여 'Disable RLS'로 끄시면 정상 저장됩니다.");
+              } else {
+                alert("❌ Supabase DB 저장 실패: " + err.message);
+              }
             });
           } else {
             // 로컬 모드: 메모리에 추가 후 즉시 재렌더링
