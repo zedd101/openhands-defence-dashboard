@@ -80,15 +80,15 @@ def extract_contract_fields(item):
 
     # 2. 계약업체
     corp = (
-        item.get("corpNm") or item.get("entrpsNm") or item.get("cntrctEntrpsNm")
+        item.get("cntrctEntrpsNm") or item.get("corpNm") or item.get("entrpsNm")
         or item.get("cprNm") or item.get("bcncNm") or item.get("cmpnyNm")
         or item.get("계약업체") or ""
     )
 
     # 3. 계약금액 (원 단위 정수)
     raw_amt = (
-        item.get("cntrctAmt") or item.get("totCntrctAmt") or item.get("amt")
-        or item.get("cntrctAmount") or item.get("bsnsAmt") or item.get("계약금액")
+        item.get("cntrctAmnt") or item.get("cntrctAmt") or item.get("totCntrctAmt")
+        or item.get("amt") or item.get("cntrctAmount") or item.get("bsnsAmt") or item.get("계약금액")
     )
     amt = normalize_amount(raw_amt)
 
