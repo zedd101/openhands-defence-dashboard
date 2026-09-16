@@ -589,7 +589,8 @@
         </h1>
         <p>협력사 조달 부품 지연과 군납 계약 일정을 자동으로 연계 분석하여 즉각적인 의사결정을 지원합니다.</p>
       </div>
-      <div>
+      <div class="header-right" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+        <div id="rate-badge" style="display: none; font-size: 12px; color: #495057; background: #F8F9FA; border: 1px solid #E9ECEF; padding: 4px 10px; border-radius: 6px; font-weight: 500;"></div>
         <button class="btn-primary" id="btn-open-report">
           📋 주간 보고 요약 만들기
         </button>
@@ -750,6 +751,7 @@
 
   <!-- 가상 데이터 로드 (더블클릭 실행 지원, fetch 미사용) -->
   <script src="data.js"></script>
+  <script src="rate.js"></script>
 
   <!-- 대시보드 코어 로직 -->
   <script>
@@ -763,6 +765,20 @@
       // 기준일 표기
       document.getElementById("today-badge").textContent = "기준일: " + TODAY;
       const todayDate = new Date(TODAY);
+
+      // 환율 정보 표기 (rate.js 연동)
+      const hasRate = typeof RATE !== "undefined" && RATE && typeof RATE.원화 === "number" && RATE.원화 > 0;
+      const rateBadge = document.getElementById("rate-badge");
+      if (rateBadge) {
+        if (hasRate) {
+          const formattedRate = Number(RATE.원화).toLocaleString();
+          rateBadge.textContent = "환율 1 USD = " + formattedRate + "원 · " + (RATE.기준일 || "") + " · " + (RATE.출처 || "");
+          rateBadge.style.display = "block";
+        } else {
+          rateBadge.style.display = "none";
+          rateBadge.textContent = "";
+        }
+      }
 
       // 계약 맵 생성 (ID 기준 빠른 조회)
       const contractMap = new Map();
@@ -994,13 +1010,19 @@
           statusBadge = '<span class="tag-status warning" style="color: #F59F00; border-color: #FFE066; background-color: #FFF9DB;">🟡 납기순연</span>';
         }
 
+        let usdText = "";
+        if (c.export && hasRate) {
+          const usdMillions = ((c.amount * 100) / RATE.원화).toFixed(1);
+          usdText = ' <span class="usd-amount" style="font-size: 11px; color: #868E96; font-weight: normal;">(약 $' + usdMillions + 'M)</span>';
+        }
+
         tr.innerHTML =
           '<td><strong>' + c.id + '</strong></td>' +
           '<td>' + c.name + (c.export ? ' <span style="font-size: 11px; color:#F37321;">[수출]</span>' : '') + '</td>' +
           '<td>' + c.category + '</td>' +
           '<td>' + c.customer + '</td>' +
           '<td><span class="tag-status">' + c.stage + '</span></td>' +
-          '<td class="text-right"><strong>' + Number(c.amount).toLocaleString() + '</strong>억</td>' +
+          '<td class="text-right"><strong>' + Number(c.amount).toLocaleString() + '</strong>억' + usdText + '</td>' +
           '<td>' + (c.delivery || "-") + '</td>' +
           '<td>' + planHtml + '</td>' +
           '<td class="text-center">' + (c.progress !== undefined ? c.progress + '%' : '-') + '</td>' +
