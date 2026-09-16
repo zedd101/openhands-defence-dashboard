@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>방산 대시보드 디자인 시안 비교 뷰어</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background-color: #0F172A;
+      color: #F8FAFC;
+      line-height: 1.6;
+      padding: 30px 20px 80px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      font-size: 15px;
+      color: #94A3B8;
+      margin-top: 6px;
+    }
+
+    /* 뷰어 모드 탭 */
+    .view-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: #1E293B;
+      color: #94A3B8;
+      border: 1px solid #334155;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      background: #334155;
+      color: #F8FAFC;
+    }
+
+    .tab-btn.active {
+      background: #F37321;
+      color: #FFFFFF;
+      border-color: #F37321;
+      box-shadow: 0 4px 12px rgba(243, 115, 33, 0.35);
+    }
+
+    /* 나란히 비교 그리드 (3열) */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .design-card {
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .design-card:hover {
+      border-color: #F37321;
+      transform: translateY(-4px);
+    }
+
+    .card-header {
+      padding: 18px 20px;
+      background: #0F172A;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .card-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-stripe {
+      background: #0A2540;
+      color: #60A5FA;
+      border: 1px solid #1D4ED8;
+    }
+
+    .badge-ibm {
+      background: #161616;
+      color: #E2E8F0;
+      border: 1px solid #64748B;
+    }
+
+    .badge-linear {
+      background: #FFF7ED;
+      color: #EA580C;
+      border: 1px solid #FDBA74;
+    }
+
+    .preview-img-wrap {
+      width: 100%;
+      height: 380px;
+      overflow-y: auto;
+      background: #FFFFFF;
+      cursor: zoom-in;
+      position: relative;
+      border-bottom: 1px solid #334155;
+    }
+
+    .preview-img-wrap img {
+      width: 100%;
+      display: block;
+    }
+
+    .card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .feature-list {
+      list-style: none;
+      font-size: 13px;
+      color: #CBD5E1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .feature-list li strong {
+      color: #F8FAFC;
+    }
+
+    .branch-box {
+      background: #0F172A;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: #38BDF8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 단일 상세 뷰 */
+    .single-view {
+      display: none;
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+
+    .single-view.active {
+      display: block;
+    }
+
+    .single-preview-img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 종합 비교표 */
+    .summary-table-box {
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 30px;
+    }
+
+    .summary-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    th {
+      background: #0F172A;
+      color: #94A3B8;
+      font-weight: 600;
+      padding: 12px 14px;
+      border-bottom: 1px solid #334155;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #334155;
+      color: #E2E8F0;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tag-accent {
+      color: #F37321;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🛡️ 방산 구매·납기 통합 대시보드 — 디자인 시안 3종 실물 비교</h1>
+      <p>각 디자인 시스템의 실제 렌더링 화면을 스크롤하여 확인하고 비교해 보세요.</p>
+    </header>
+
+    <!-- 뷰 전환 탭 -->
+    <div class="view-tabs">
+      <button class="tab-btn active" onclick="switchView('all')">👀 3개 시안 나란히 비교</button>
+      <button class="tab-btn" onclick="switchView('stripe')">💳 시안 2: Stripe 스타일 (크게 보기)</button>
+      <button class="tab-btn" onclick="switchView('ibm')">🏢 시안 3: IBM Carbon 스타일 (크게 보기)</button>
+      <button class="tab-btn" onclick="switchView('linear')">⚡ 시안 4: Linear + Stripe 하이브리드 (크게 보기)</button>
+    </div>
+
+    <!-- 1. 나란히 비교 뷰 -->
+    <div id="view-all" class="compare-grid">
+      
+      <!-- 카드 1: Stripe -->
+      <div class="design-card">
+        <div class="card-header">
+          <div class="card-title">2. Stripe 스타일</div>
+          <span class="card-badge badge-stripe">FINTECH PRECISION</span>
+        </div>
+        <div class="preview-img-wrap" title="스크롤하여 아래 내용을 확인하세요">
+          <img src="screenshots/stripe-preview.png" alt="Stripe Theme Preview">
+        </div>
+        <div class="card-body">
+          <ul class="feature-list">
+            <li>✨ <strong>캔버스:</strong> #F6F9FC 쿨그레이 배경 & 8px 둥근 모서리</li>
+            <li>☁️ <strong>음영:</strong> 2단계 레이어드 소프트 섀도우 (깊이감 부여)</li>
+            <li>🔢 <strong>수치:</strong> Tabular figures(등폭 숫자)로 억원/날짜 정돈</li>
+            <li>📑 <strong>상단 탭:</strong> 세그먼트 컨트롤 스타일 캡슐 탭</li>
+            <li>🎯 <strong>추천:</strong> 임원 보고용 신뢰감 및 금융 수준의 단정함</li>
+          </ul>
+          <div class="branch-box">
+            <span>git checkout design/stripe</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 2: IBM Carbon -->
+      <div class="design-card">
+        <div class="card-header">
+          <div class="card-title">3. IBM Carbon 스타일</div>
+          <span class="card-badge badge-ibm">DEFENSE ENTERPRISE</span>
+        </div>
+        <div class="preview-img-wrap" title="스크롤하여 아래 내용을 확인하세요">
+          <img src="screenshots/ibm-carbon-preview.png" alt="IBM Carbon Theme Preview">
+        </div>
+        <div class="card-body">
+          <ul class="feature-list">
+            <li>📐 <strong>형태:</strong> 0~2px 플랫 사각 모듈 (Flat-Square)</li>
+            <li>🚫 <strong>그림자:</strong> 그림자 일체 제거(Zero-shadow), 1px 명확한 보더</li>
+            <li>🏛️ <strong>헤더:</strong> 묵직한 #161616 차콜 탑라인과 공공 시스템 규격</li>
+            <li>📊 <strong>테이블:</strong> Carbon Data Table 스타일의 컴팩트 셀</li>
+            <li>🎯 <strong>추천:</strong> 방사청/군 공식 관제 시스템 같은 엄격한 위엄</li>
+          </ul>
+          <div class="branch-box">
+            <span>git checkout design/ibm-carbon</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 3: Linear + Stripe -->
+      <div class="design-card" style="border-color: #F37321;">
+        <div class="card-header" style="background: #1E293B;">
+          <div class="card-title" style="color: #FDBA74;">4. Linear + Stripe (추천)</div>
+          <span class="card-badge badge-linear">ACTION QUEUE & HYBRID</span>
+        </div>
+        <div class="preview-img-wrap" title="스크롤하여 아래 내용을 확인하세요">
+          <img src="screenshots/linear-stripe-preview.png" alt="Linear+Stripe Theme Preview">
+        </div>
+        <div class="card-body">
+          <ul class="feature-list">
+            <li>⚡ <strong>조치 큐:</strong> Linear 특유의 3.5px 컬러 바 & 마이크로 원형 뱃지</li>
+            <li>💡 <strong>권고 조치:</strong> 오렌지 테두리 마이크로 액션 콜아웃 박스</li>
+            <li>📈 <strong>수치/테이블:</strong> Stripe의 깔끔한 tabular 정렬 및 부드러운 행 호버</li>
+            <li>🚀 <strong>헤더:</strong> 현대적 첨단 방산 테크 기업 감성 (모던 미니멀)</li>
+            <li>🎯 <strong>추천:</strong> 실무자가 지금 즉시 조치할 대상을 한눈에 포착</li>
+          </ul>
+          <div class="branch-box">
+            <span>git checkout design/linear-stripe</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. 개별 확대 뷰 (Stripe) -->
+    <div id="view-stripe" class="single-view">
+      <h2 style="font-size: 20px; margin-bottom: 14px; color: #60A5FA;">💳 시안 2: Stripe 핀테크 엔터프라이즈 스타일 상세 화면</h2>
+      <img src="screenshots/stripe-preview.png" class="single-preview-img" alt="Stripe Detail">
+    </div>
+
+    <!-- 3. 개별 확대 뷰 (IBM Carbon) -->
+    <div id="view-ibm" class="single-view">
+      <h2 style="font-size: 20px; margin-bottom: 14px; color: #E2E8F0;">🏢 시안 3: IBM Carbon 국방 엔터프라이즈 스타일 상세 화면</h2>
+      <img src="screenshots/ibm-carbon-preview.png" class="single-preview-img" alt="IBM Detail">
+    </div>
+
+    <!-- 4. 개별 확대 뷰 (Linear + Stripe) -->
+    <div id="view-linear" class="single-view">
+      <h2 style="font-size: 20px; margin-bottom: 14px; color: #FDBA74;">⚡ 시안 4: Linear + Stripe 하이브리드 모던 테크 스타일 상세 화면</h2>
+      <img src="screenshots/linear-stripe-preview.png" class="single-preview-img" alt="Linear Stripe Detail">
+    </div>
+
+    <!-- 종합 비교표 -->
+    <div class="summary-table-box">
+      <div class="summary-title">📊 디자인 시안 3종 핵심 사양 비교표</div>
+      <table>
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>2. Stripe 스타일 (design/stripe)</th>
+            <th>3. IBM Carbon 스타일 (design/ibm-carbon)</th>
+            <th>4. Linear + Stripe (design/linear-stripe)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>전체 인상</strong></td>
+            <td>글로벌 핀테크·프리미엄 ERP</td>
+            <td>국방부·방사청 엄격한 공공 관제</td>
+            <td><span class="tag-accent">첨단 방산 테크 (팔란티어/안두릴 감성)</span></td>
+          </tr>
+          <tr>
+            <td><strong>모서리 (Radius)</strong></td>
+            <td>8px 부드러운 라운딩</td>
+            <td>0~2px 완전 직각 플랫</td>
+            <td>6~8px 컴팩트 모던 라운딩 + Pill 뱃지</td>
+          </tr>
+          <tr>
+            <td><strong>그림자 (Elevation)</strong></td>
+            <td>은은한 2단계 레이어드 섀도우</td>
+            <td>그림자 100% 제거 (Flat 1px 그리드)</td>
+            <td>미세 마이크로 섀도우 (가벼운 질감)</td>
+          </tr>
+          <tr>
+            <td><strong>지금 조치할 것</strong></td>
+            <td>화이트 레이어 카드 + 좌측 스트라이프</td>
+            <td>고밀도 사각 타일 + 명확한 외곽선</td>
+            <td><span class="tag-accent">이슈 트래커 큐 + 오렌지 액션 콜아웃</span></td>
+          </tr>
+          <tr>
+            <td><strong>데이터 테이블</strong></td>
+            <td>등폭 숫자 정렬 + 라이트 슬레이트 헤더</td>
+            <td>Carbon 표준 묵직한 그레이 헤더</td>
+            <td>슬레이트 헤더 + Tabular 등폭 숫자</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    function switchView(viewName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.getElementById('view-all').style.display = 'none';
+      document.getElementById('view-stripe').classList.remove('active');
+      document.getElementById('view-ibm').classList.remove('active');
+      document.getElementById('view-linear').classList.remove('active');
+
+      if (viewName === 'all') {
+        document.getElementById('view-all').style.display = 'grid';
+      } else {
+        document.getElementById('view-' + viewName).classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
