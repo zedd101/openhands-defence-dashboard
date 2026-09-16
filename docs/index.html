@@ -1065,6 +1065,27 @@
       color: #FFFFFF;
       border-color: #F37321;
     }
+    .btn-memo-small {
+      padding: 3px 8px;
+      font-size: 12px;
+      border: 1px solid #FFD8A8;
+      background: #FFF4E6;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #E8590C;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-memo-small:hover {
+      background: #F37321;
+      color: #FFFFFF;
+      border-color: #F37321;
+    }
+    .btn-memo-small.has-memo {
+      background: #E8590C;
+      color: #FFFFFF;
+      border-color: #D95F12;
+    }
     .pagination-bar {
       display: flex;
       justify-content: space-between;
@@ -1468,6 +1489,50 @@
     </div>
   </div>
 
+  <!-- 공공데이터 실무 검토 메모 모달 -->
+  <div class="modal-overlay" id="public-memo-modal">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title">📝 조달 공고 실무 검토 메모 &amp; 대응 상태</div>
+        <button class="modal-close" id="btn-close-public-memo-modal">&times;</button>
+      </div>
+      <div id="memo-contract-info" style="background:#F8F9FA; border:1px solid #E9ECEF; border-radius:8px; padding:12px 14px; margin-bottom:16px;">
+        <div id="memo-target-name" style="font-size:14px; font-weight:700; color:#111827; margin-bottom:4px;">-</div>
+        <div id="memo-target-meta" style="font-size:12px; color:#6C757D;">-</div>
+      </div>
+
+      <form id="form-public-memo">
+        <input type="hidden" id="memo-contract-name-hidden">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 6px;">우리 팀 대응 상태 *</label>
+          <select id="memo-status-select" style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none; background:#FFFFFF;">
+            <option value="검토중" selected>🟡 검토중 (팀내 적합성 분석)</option>
+            <option value="입찰참여">🔵 입찰참여 (제안 준비)</option>
+            <option value="제안서작성">🟠 제안서작성 (실무 작성중)</option>
+            <option value="패스">⚪ 패스 (미참여 결정)</option>
+            <option value="낙찰성공">🟢 낙찰성공 (수주 완료)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; color: #343A40; margin-bottom: 6px;">실무 검토 메모</label>
+          <textarea id="memo-content-input" placeholder="예: 2공장 레이더 조립 라인 일정 확인 필요, 다음 주 팀 회의 안건 등록..." style="width: 100%; height: 90px; padding: 10px 12px; font-size: 13px; border: 1px solid #CED4DA; border-radius: 6px; outline: none; resize: vertical; line-height: 1.5; font-family: inherit;"></textarea>
+          <span style="font-size: 11px; color: #868E96; margin-top: 4px; display: block;">저장 시 Supabase <code>public_notes</code> 테이블에 실시간 반영되어 팀원들과 공유됩니다.</span>
+        </div>
+
+        <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn-secondary" id="btn-delete-public-memo" type="button" style="font-size: 12px; color: #E03131; background: #FFF5F5; border: 1px solid #FFC9C9; display: none; cursor: pointer;">
+            메모 삭제
+          </button>
+          <div style="display: flex; gap: 8px; margin-left: auto;">
+            <button class="btn-secondary" id="btn-cancel-public-memo-modal" type="button">취소</button>
+            <button class="btn-primary" id="btn-save-public-memo" type="submit">메모 저장</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- 주간 보고 요약 모달 -->
   <div class="modal-overlay" id="report-modal">
     <div class="modal-content">
@@ -1537,6 +1602,9 @@
           tabBtnSample.classList.remove("active");
           tabPanePublic.classList.remove("hidden");
           tabPaneSample.classList.add("hidden");
+          if (typeof loadSupabasePublicNotes === "function") {
+            loadSupabasePublicNotes();
+          }
         });
       }
 
@@ -1756,7 +1824,7 @@
           '          <th class="sortable text-right" data-sort="예정금액" style="width: 130px;">예정금액</th>' +
           '          <th class="sortable text-center" data-sort="낙찰률" style="width: 100px;">낙찰률</th>' +
           '          <th class="sortable" data-sort="계약방법" style="width: 110px;">계약방법</th>' +
-          '          <th class="text-center" style="width: 80px;">상세</th>' +
+          '          <th class="text-center" style="width: 135px;">관리</th>' +
           '        </tr>' +
           '      </thead>' +
           '      <tbody id="ledger-table-body"></tbody>' +
@@ -2374,6 +2442,223 @@
           });
         }
 
+        // ========================================================
+        // 공공데이터 실무 메모 (Supabase public_notes 테이블 연동)
+        // ========================================================
+        const publicNotesMap = new Map();
+
+        function loadSupabasePublicNotes() {
+          // 로컬 캐시 메모 복원
+          try {
+            const cached = JSON.parse(localStorage.getItem("local_public_notes") || "{}");
+            Object.keys(cached).forEach(function (k) {
+              publicNotesMap.set(k, cached[k]);
+            });
+          } catch (e) {}
+
+          const url = (localStorage.getItem("supabase_project_url") || "").trim().replace(/\/$/, "");
+          const key = (localStorage.getItem("supabase_anon_key") || "").trim();
+
+          if (!url || !key) {
+            renderLedgerGrid(getFilteredContracts());
+            return Promise.resolve(false);
+          }
+
+          const endpoint = url + "/rest/v1/public_notes?select=*";
+          return fetch(endpoint, {
+            method: "GET",
+            headers: {
+              "apikey": key,
+              "Authorization": "Bearer " + key,
+              "Content-Type": "application/json"
+            }
+          }).then(function (resp) {
+            if (!resp.ok) return null;
+            return resp.json();
+          }).then(function (rows) {
+            if (Array.isArray(rows)) {
+              rows.forEach(function (r) {
+                if (r.contract_name) {
+                  publicNotesMap.set(r.contract_name, {
+                    status: r.status || "검토중",
+                    memo: r.memo || ""
+                  });
+                }
+              });
+              const cacheObj = {};
+              publicNotesMap.forEach(function (v, k) { cacheObj[k] = v; });
+              localStorage.setItem("local_public_notes", JSON.stringify(cacheObj));
+
+              renderLedgerGrid(getFilteredContracts());
+              return true;
+            }
+          }).catch(function (err) {
+            console.warn("public_notes 로드 안내 (로컬 유지):", err);
+            renderLedgerGrid(getFilteredContracts());
+            return false;
+          });
+        }
+
+        window.loadSupabasePublicNotes = loadSupabasePublicNotes;
+
+        function savePublicNote(contractName, status, memo) {
+          publicNotesMap.set(contractName, { status: status, memo: memo });
+          const cacheObj = {};
+          publicNotesMap.forEach(function (v, k) { cacheObj[k] = v; });
+          localStorage.setItem("local_public_notes", JSON.stringify(cacheObj));
+
+          renderLedgerGrid(getFilteredContracts());
+
+          const url = (localStorage.getItem("supabase_project_url") || "").trim().replace(/\/$/, "");
+          const key = (localStorage.getItem("supabase_anon_key") || "").trim();
+
+          if (!url || !key) {
+            showToast("ℹ️ 브라우저에 메모가 저장되었습니다. (DB 연결 시 클라우드 동기화)");
+            return Promise.resolve(true);
+          }
+
+          const endpoint = url + "/rest/v1/public_notes";
+          const payload = {
+            contract_name: contractName,
+            status: status,
+            memo: memo
+          };
+
+          return fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "apikey": key,
+              "Authorization": "Bearer " + key,
+              "Content-Type": "application/json",
+              "Prefer": "resolution=merge-duplicates,return=representation"
+            },
+            body: JSON.stringify(payload)
+          }).then(function (resp) {
+            if (!resp.ok) {
+              return resp.text().then(function (txt) { throw new Error("HTTP " + resp.status + ": " + txt); });
+            }
+            return resp.json();
+          }).then(function () {
+            showToast("✅ Supabase public_notes 테이블에 메모가 저장되었습니다!");
+            return true;
+          }).catch(function (err) {
+            console.error("Supabase 메모 저장 실패:", err);
+            if (err.message && err.message.includes("404")) {
+              alert("⚠️ 안내: Supabase에 'public_notes' 테이블이 아직 생성되지 않았습니다.\n\n현재 브라우저에 메모가 안전하게 보관되었으며, Supabase SQL Editor에서 public_notes 테이블을 생성하시면 클라우드에 영구 저장됩니다.");
+            } else if (err.message && err.message.includes("row-level security")) {
+              alert("⚠️ 안내: Supabase public_notes 테이블의 RLS 보안 정책을 해제(Disable RLS)해 주십시오.");
+            } else {
+              showToast("로컬 브라우저에 저장되었습니다 (DB 동기화 대기)");
+            }
+            return false;
+          });
+        }
+
+        function deletePublicNote(contractName) {
+          publicNotesMap.delete(contractName);
+          const cacheObj = {};
+          publicNotesMap.forEach(function (v, k) { cacheObj[k] = v; });
+          localStorage.setItem("local_public_notes", JSON.stringify(cacheObj));
+
+          renderLedgerGrid(getFilteredContracts());
+
+          const url = (localStorage.getItem("supabase_project_url") || "").trim().replace(/\/$/, "");
+          const key = (localStorage.getItem("supabase_anon_key") || "").trim();
+
+          if (!url || !key) {
+            showToast("메모가 삭제되었습니다.");
+            return Promise.resolve(true);
+          }
+
+          const endpoint = url + "/rest/v1/public_notes?contract_name=eq." + encodeURIComponent(contractName);
+          return fetch(endpoint, {
+            method: "DELETE",
+            headers: {
+              "apikey": key,
+              "Authorization": "Bearer " + key
+            }
+          }).then(function () {
+            showToast("Supabase DB에서 메모가 삭제되었습니다.");
+            return true;
+          }).catch(function (err) {
+            console.warn("DB 삭제 오류:", err);
+          });
+        }
+
+        function openPublicMemoModal(c) {
+          const modal = document.getElementById("public-memo-modal");
+          if (!modal) return;
+
+          const targetNameEl = document.getElementById("memo-target-name");
+          const targetMetaEl = document.getElementById("memo-target-meta");
+          const hiddenNameInput = document.getElementById("memo-contract-name-hidden");
+          const statusSelect = document.getElementById("memo-status-select");
+          const memoTextarea = document.getElementById("memo-content-input");
+          const deleteBtn = document.getElementById("btn-delete-public-memo");
+
+          const name = c.계약명 || "";
+          hiddenNameInput.value = name;
+          targetNameEl.textContent = name || "계약명 미기재";
+          targetMetaEl.textContent = (c.계약업체 || "-") + " | " + (Number(c.계약금액) || 0).toLocaleString() + "원 | " + (c.계약일 || "-");
+
+          const existing = publicNotesMap.get(name);
+          if (existing) {
+            statusSelect.value = existing.status || "검토중";
+            memoTextarea.value = existing.memo || "";
+            if (deleteBtn) deleteBtn.style.display = "inline-block";
+          } else {
+            statusSelect.value = "검토중";
+            memoTextarea.value = "";
+            if (deleteBtn) deleteBtn.style.display = "none";
+          }
+
+          modal.classList.add("active");
+        }
+
+        // 메모 모달 이벤트 바인딩
+        const memoModal = document.getElementById("public-memo-modal");
+        const closeMemoModalBtn = document.getElementById("btn-close-public-memo-modal");
+        const cancelMemoModalBtn = document.getElementById("btn-cancel-public-memo-modal");
+        const formPublicMemo = document.getElementById("form-public-memo");
+        const deleteMemoBtn = document.getElementById("btn-delete-public-memo");
+
+        function closePublicMemoModal() {
+          if (memoModal) memoModal.classList.remove("active");
+        }
+
+        if (closeMemoModalBtn) closeMemoModalBtn.onclick = closePublicMemoModal;
+        if (cancelMemoModalBtn) cancelMemoModalBtn.onclick = closePublicMemoModal;
+        if (memoModal) {
+          memoModal.onclick = function (e) {
+            if (e.target === memoModal) closePublicMemoModal();
+          };
+        }
+
+        if (formPublicMemo) {
+          formPublicMemo.onsubmit = function (e) {
+            e.preventDefault();
+            const targetName = document.getElementById("memo-contract-name-hidden").value;
+            const status = document.getElementById("memo-status-select").value;
+            const memoText = document.getElementById("memo-content-input").value.trim();
+
+            if (!targetName) return;
+
+            savePublicNote(targetName, status, memoText);
+            closePublicMemoModal();
+          };
+        }
+
+        if (deleteMemoBtn) {
+          deleteMemoBtn.onclick = function () {
+            const targetName = document.getElementById("memo-contract-name-hidden").value;
+            if (confirm("이 계약에 등록된 실무 메모를 삭제하시겠습니까?")) {
+              deletePublicNote(targetName);
+              closePublicMemoModal();
+            }
+          };
+        }
+
+
         // [세부 계약 체결 원장] 그리드 및 페이지네이션
         function renderLedgerGrid(filtered) {
           const sorted = getSortedContracts(filtered);
@@ -2417,25 +2702,60 @@
             const amtStr = (Number(c.계약금액) || 0).toLocaleString() + '원';
             const planStr = (Number(c.예정금액) || 0).toLocaleString() + '원';
 
+            // 실무 메모 및 상태 뱃지 확인
+            let memoBadgeHtml = '';
+            const note = publicNotesMap.get(c.계약명);
+            const hasMemo = Boolean(note && note.status);
+            if (hasMemo) {
+              let badgeColor = 'background:#FFF9DB; color:#F59F00; border:1px solid #FFE066;';
+              if (note.status === '입찰참여') badgeColor = 'background:#E7F5FF; color:#1971C2; border:1px solid #A5D8FF;';
+              else if (note.status === '제안서작성') badgeColor = 'background:#FFF4E6; color:#E8590C; border:1px solid #FFD8A8;';
+              else if (note.status === '패스') badgeColor = 'background:#F1F3F5; color:#868E96; border:1px solid #CED4DA;';
+              else if (note.status === '낙찰성공') badgeColor = 'background:#EBFBEE; color:#2F9E44; border:1px solid #B2F2BB;';
+
+              memoBadgeHtml = '<div style="margin-top:4px; display:flex; align-items:center; gap:5px; font-size:11px; font-weight:normal;">' +
+                '<span style="padding:1px 6px; border-radius:4px; font-weight:700; ' + badgeColor + '">' + note.status + '</span>' +
+                (note.memo ? '<span style="color:#495057; background:#F8F9FA; border:1px solid #E9ECEF; padding:1px 6px; border-radius:4px; max-width:210px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + note.memo.replace(/"/g, '&quot;') + '">💬 ' + note.memo + '</span>' : '') +
+                '</div>';
+            }
+
             rowsHtml +=
               '<tr class="clickable-row" data-index="' + (startIdx + idx) + '">' +
               '  <td>' + (c.계약일 || '-') + '</td>' +
-              '  <td style="font-weight: 600; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + (c.계약명 || '') + '">' + (c.계약명 || '-') + '</td>' +
+              '  <td style="font-weight: 600; max-width: 280px;" title="' + (c.계약명 || '') + '">' +
+              '    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (c.계약명 || '-') + '</div>' +
+              memoBadgeHtml +
+              '  </td>' +
               '  <td>' + (c.계약업체 || '-') + '</td>' +
               '  <td class="text-right" style="font-weight: 700; color: #111827;">' + amtStr + '</td>' +
               '  <td class="text-right" style="color: #6C757D;">' + planStr + '</td>' +
               '  <td class="text-center">' + rateBadge + '</td>' +
               '  <td>' + (c.계약방법 || '-') + '</td>' +
-              '  <td class="text-center"><button class="btn-detail-small" type="button">상세</button></td>' +
+              '  <td class="text-center" style="white-space:nowrap;">' +
+              '    <div style="display:inline-flex; gap:4px; align-items:center;">' +
+              '      <button class="btn-memo-small ' + (hasMemo ? 'has-memo' : '') + '" type="button" data-index="' + (startIdx + idx) + '">' + (hasMemo ? '📝 수정' : '📝 메모') + '</button>' +
+              '      <button class="btn-detail-small" type="button" data-index="' + (startIdx + idx) + '">상세</button>' +
+              '    </div>' +
+              '  </td>' +
               '</tr>';
           });
           tbody.innerHTML = rowsHtml;
 
-          // 행 클릭 이벤트
+          // 행 클릭 이벤트 (단, 메모 버튼 클릭 시에는 상세 모달이 뜨지 않음)
           tbody.querySelectorAll(".clickable-row").forEach(function (tr) {
-            tr.addEventListener("click", function () {
+            tr.addEventListener("click", function (e) {
+              if (e.target.closest(".btn-memo-small")) return;
               const idx = parseInt(tr.getAttribute("data-index"), 10);
               if (sorted[idx]) openDetailModal(sorted[idx]);
+            });
+          });
+
+          // 메모 버튼 클릭 이벤트
+          tbody.querySelectorAll(".btn-memo-small").forEach(function (btn) {
+            btn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              const idx = parseInt(btn.getAttribute("data-index"), 10);
+              if (sorted[idx]) openPublicMemoModal(sorted[idx]);
             });
           });
 
@@ -2749,6 +3069,7 @@
 
         // 초기 1회 실행
         renderDashboard();
+        loadSupabasePublicNotes();
       }
 
 
