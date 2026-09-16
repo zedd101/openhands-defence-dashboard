@@ -183,88 +183,186 @@
     .action-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
 
     .action-item {
-      padding: 16px;
+      padding: 18px 22px;
       border-radius: 10px;
       border: 1px solid #E9ECEF;
       background-color: #FFFFFF;
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 16px;
-      align-items: center;
+      grid-template-columns: 280px minmax(320px, 1.3fr) minmax(320px, 1.1fr);
+      gap: 24px;
+      align-items: flex-start;
+      transition: box-shadow 0.15s ease, border-color 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
-    .action-item.red-border {
+    .action-item:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      border-color: #DDE2E5;
+    }
+
+    .action-item.alert-red {
       border-left: 5px solid #DC3545;
-      background-color: #FFF9F9;
+      background-color: #FFFDFD;
     }
 
-    .action-item.yellow-border {
-      border-left: 5px solid #FFC107;
-      background-color: #FFFFF8;
+    .action-item.alert-yellow {
+      border-left: 5px solid #F59F00;
+      background-color: #FFFFFD;
+    }
+
+    /* 1열: 대상 사업 및 부품 정보 */
+    .action-col-target {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .action-badge-row {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      margin-bottom: 6px;
     }
 
     .action-badge {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 4px 10px;
-      font-size: 12px;
+      padding: 3px 8px;
+      font-size: 11px;
       font-weight: 700;
-      border-radius: 6px;
+      border-radius: 4px;
+      letter-spacing: -0.2px;
       white-space: nowrap;
+      line-height: 1.2;
     }
 
     .badge-red {
-      background-color: #F8D7DA;
-      color: #721C24;
+      background-color: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FCA5A5;
     }
 
     .badge-yellow {
-      background-color: #FFF3CD;
-      color: #856404;
+      background-color: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FCD34D;
     }
 
-    .action-content-title {
+    .action-target-title {
       font-size: 15px;
       font-weight: 700;
-      color: #212529;
-      margin-bottom: 4px;
+      color: #111827;
+      line-height: 1.45;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      margin-bottom: 6px;
     }
 
-    .action-issue {
-      font-size: 13px;
-      color: #C92A2A;
-      margin-bottom: 4px;
+    .action-target-meta {
+      font-size: 12px;
+      color: #6C757D;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .action-target-meta strong {
+      color: #212529;
       font-weight: 600;
     }
 
-    .action-item.yellow-border .action-issue {
+    .meta-divider {
+      color: #CED4DA;
+      font-size: 11px;
+    }
+
+    /* 2열: 문제 원인 설명 */
+    .action-col-cause {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .action-col-label {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      margin-bottom: 6px;
+    }
+
+    .action-col-label.label-red {
+      color: #C92A2A;
+    }
+
+    .action-col-label.label-yellow {
       color: #B07800;
     }
 
-    .action-recommendation {
+    .action-cause-text {
       font-size: 13px;
-      color: #343A40;
-      background: rgba(0, 0, 0, 0.03);
-      padding: 6px 10px;
-      border-radius: 6px;
-      display: inline-block;
-      margin-top: 2px;
+      color: #374151;
+      line-height: 1.6;
+      word-break: keep-all;
+      overflow-wrap: break-word;
     }
 
-    .action-meta {
-      text-align: right;
-      font-size: 12px;
-      color: #6C757D;
-      white-space: nowrap;
+    /* 3열: 권고 조치 박스 */
+    .action-col-action {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      width: 100%;
     }
 
-    .action-meta strong {
-      color: #212529;
+    .action-action-box {
+      background-color: #F8F9FA;
+      border: 1px solid #E9ECEF;
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-sizing: border-box;
+    }
+
+    .action-item.alert-red .action-action-box {
+      background-color: #FFF8F6;
+      border-color: #FFE3D8;
+    }
+
+    .action-action-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #F37321;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-action-text {
+      font-size: 13px;
+      color: #1F2937;
+      line-height: 1.55;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+
+    /* 반응형 레이아웃 */
+    @media (max-width: 992px) {
+      .action-item {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
     }
 
     /* 테이블 공통 스타일 */
@@ -3367,22 +3465,37 @@
         } else {
           allActions.forEach(function (act) {
             const itemDiv = document.createElement("div");
-            itemDiv.className = "action-item " + (act.type === "RED" ? "alert-red" : "alert-yellow");
+            const isRed = act.type === "RED";
+            itemDiv.className = "action-item " + (isRed ? "alert-red" : "alert-yellow");
 
-            const badgeHtml = act.type === "RED"
-              ? '<span class="action-badge badge-red">적신호: 납기 위협</span>'
-              : '<span class="action-badge badge-yellow">황신호: ' + (act.category || "주의") + '</span>';
+            const badgeHtml = isRed
+              ? '<span class="action-badge badge-red">🔴 적신호: 납기 위협</span>'
+              : '<span class="action-badge badge-yellow">🟡 황신호: ' + (act.category || "주의") + '</span>';
+
+            const causeLabelHtml = isRed
+              ? '<span class="action-col-label label-red"><span>🚨</span> 납기 위협 사유</span>'
+              : '<span class="action-col-label label-yellow"><span>⚠️</span> 지연·리스크 원인</span>';
 
             itemDiv.innerHTML =
-              '<div class="action-item-header">' +
-                '<div style="display: flex; align-items: center; gap: 8px;">' +
-                  badgeHtml +
-                  '<span class="action-title">' + act.title + '</span>' +
+              '<div class="action-col-target">' +
+                '<div class="action-badge-row">' + badgeHtml + '</div>' +
+                '<div class="action-target-title">' + act.title + '</div>' +
+                '<div class="action-target-meta">' +
+                  '<span>담당: <strong>' + act.owner + '</strong></span>' +
+                  '<span class="meta-divider">|</span>' +
+                  '<span>납기: ' + (act.delivery || '-') + '</span>' +
                 '</div>' +
-                '<span class="action-owner">담당: <strong>' + act.owner + '</strong> | 납기 ' + (act.delivery || '-') + '</span>' +
               '</div>' +
-              '<div class="action-desc">' + act.issue + '</div>' +
-              '<div class="action-recommendation"><strong>권고 조치:</strong> ' + act.recommendation + '</div>';
+              '<div class="action-col-cause">' +
+                causeLabelHtml +
+                '<div class="action-cause-text">' + act.issue + '</div>' +
+              '</div>' +
+              '<div class="action-col-action">' +
+                '<div class="action-action-box">' +
+                  '<div class="action-action-label"><span>💡</span> 즉각 권고 조치</div>' +
+                  '<div class="action-action-text">' + act.recommendation + '</div>' +
+                '</div>' +
+              '</div>';
 
             actionContainer.appendChild(itemDiv);
           });
